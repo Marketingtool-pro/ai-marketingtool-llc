@@ -33,5 +33,11 @@
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },
-  "private": true
+  "private": true,
+  "overrides": {
+    "@opentelemetry/auto-instrumentations-node": ">=0.75.0",
+    "@opentelemetry/sdk-node": ">=0.217.0",
+    "@opentelemetry/exporter-prometheus": ">=0.217.0",
+    "@tootallnate/once": ">=3.0.1"
+  }
 }
