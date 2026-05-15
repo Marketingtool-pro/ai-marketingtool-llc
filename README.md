@@ -26,9 +26,13 @@ This repo is also the control repo for the full Marketingtool-pro project.
 
 ### Required secret
 
-Add this Actions secret in `Marketingtool-pro/ai-marketingtool-llc`:
+Add this Actions **environment secret** in `Marketingtool-pro/ai-marketingtool-llc`:
 
 - `ORG_WORKFLOW_TOKEN`: GitHub token with access to the private org repos and `workflow` permission
+
+Create or use an environment named:
+
+- `ORG_WORKFLOW_TOKEN`
 
 ### Manual run
 
