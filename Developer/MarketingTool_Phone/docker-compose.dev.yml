@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  # Development Appwrite API
+  appwrite-dev:
+    image: appwrite/appwrite:latest
+    container_name: marketingtool-dev-api
+    ports:
+      - "8080:80"
+    environment:
+      - _APP_ENV=development
+      - _APP_OPENSSL_KEY_V1=your_dev_key
+      - _APP_DOMAIN=localhost
+      - _APP_REDIS_HOST=redis-dev
+      - _APP_DB_HOST=mariadb-dev
+      - _APP_DB_PORT=3306
+      - _APP_DB_USER=appwrite
+      - _APP_DB_PASS=password
+      - _APP_DB_SCHEMA=appwrite
+    volumes:
+      - appwrite_dev_data:/storage/uploads
+      - appwrite_dev_config:/storage/config
+    depends_on:
+      - mariadb-dev
+      - redis-dev
+    networks:
+      - marketingtool-dev
+
+  # Development Database
+  mariadb-dev:
+    image: mariadb:11
+    container_name: marketingtool-dev-db
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password
+      - MYSQL_DATABASE=appwrite
+      - MYSQL_USER=appwrite
+      - MYSQL_PASSWORD=password
+    volumes:
+      - mariadb_dev_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - marketingtool-dev
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Development Cache
+  redis-dev:
+    image: redis:7-alpine
+    container_name: marketingtool-dev-cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+    networks:
+      - marketingtool-dev
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  appwrite_dev_data:
+  appwrite_dev_config:
+  mariadb_dev_data:
+  redis_dev_data:
+
+networks:
+  marketingtool-dev:
+    driver: bridge
