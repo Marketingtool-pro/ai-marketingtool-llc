@@ -1,8 +1,0 @@
-{
-  "extends": "expo/tsconfig.base",
-  "compilerOptions": {
-    "strict": true,
-    "resolveJsonModule": true
-  },
-  "exclude": ["node_modules", "functions", "appwrite-functions", "dist", "ios", "android"]
-}
