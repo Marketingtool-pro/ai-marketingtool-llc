@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  # Backend API service (Appwrite)
+  appwrite-api:
+    image: appwrite/appwrite:latest
+    container_name: marketingtool-api
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - _APP_ENV=production
+      - _APP_OPENSSL_KEY_V1=${OPENSSL_KEY}
+      - _APP_DOMAIN=${APP_DOMAIN:-api.marketingtool.pro}
+      - _APP_DOMAIN_TARGET=${APP_DOMAIN:-api.marketingtool.pro}
+      - _APP_REDIS_HOST=redis
+      - _APP_DB_HOST=mariadb
+      - _APP_DB_PORT=3306
+      - _APP_DB_USER=${DB_USER:-appwrite}
+      - _APP_DB_PASS=${DB_PASSWORD}
+      - _APP_DB_SCHEMA=appwrite
+      - _APP_MAIL_HOST=${MAIL_HOST}
+      - _APP_MAIL_PORT=${MAIL_PORT}
+      - _APP_MAIL_SECURE=${MAIL_SECURE}
+      - _APP_MAIL_FROM=${MAIL_FROM}
+      - _APP_MAIL_USER=${MAIL_USER}
+      - _APP_MAIL_PASS=${MAIL_PASSWORD}
+    volumes:
+      - appwrite_data:/storage/uploads
+      - appwrite_config:/storage/config
+      - appwrite_certs:/storage/certs
+    depends_on:
+      - mariadb
+      - redis
+    networks:
+      - marketingtool
+
+  # Database
+  mariadb:
+    image: mariadb:11
+    container_name: marketingtool-db
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+      - MYSQL_DATABASE=appwrite
+      - MYSQL_USER=${DB_USER:-appwrite}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - marketingtool
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Cache layer
+  redis:
+    image: redis:7-alpine
+    container_name: marketingtool-cache
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    networks:
+      - marketingtool
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Optional: Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: marketingtool-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - appwrite-api
+    networks:
+      - marketingtool
+
+volumes:
+  appwrite_data:
+  appwrite_config:
+  appwrite_certs:
+  mariadb_data:
+  redis_data:
+
+networks:
+  marketingtool:
+    driver: bridge
