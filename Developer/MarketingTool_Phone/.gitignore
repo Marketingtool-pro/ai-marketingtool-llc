@@ -1,0 +1,70 @@
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# SECURE: BLOCK ALL CREDENTIALS & JSON SECRETS
+credentials/
+*.json
+!app.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!google-services.json
+!GoogleService-Info.plist
+!assets/animations/*.json
+!src/assets/animations/*.json
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# local env files
+.env*.local
+
+# typescript
+*.tsbuildinfo
+
+# generated native folders
+/ios
+/android
+
+.gemini/
+gha-creds-*.json
+asc-api-key.p8
+google-play-service-account.json
+.env
+.env.production
+
+# EAS Submit — Google Play service account (NEVER commit)
+.eas-google-play-sa.json
+GoogleService-Info.plist.bak-*
+idv-quickstart/
+
+# Build artifacts — regenerable, must never be in git
+*.aab
+*.apk
+*.ipa
+*.app
+*.dSYM.zip

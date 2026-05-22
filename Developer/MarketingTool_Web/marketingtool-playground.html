@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MarketingTool.pro — Design System Playground</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0E0C15;
+    --surface-1: #16181E;
+    --surface-2: #1A1C24;
+    --surface-3: #21242D;
+    --surface-4: #2E313D;
+    --primary: #805AF5;
+    --primary-light: #9B7BF7;
+    --primary-lighter: #CD99FF;
+    --primary-darker: #35316f;
+    --text-primary: #FFFFFF;
+    --text-secondary: #BCC3D7;
+    --text-disabled: #6B7280;
+    --border: rgba(255,255,255,0.05);
+    --success: #3EB75E;
+    --warning: #FFC876;
+    --error: #FF0003;
+    --info: #1BA2DB;
+    --radius: 12px;
+    --font: 'Sora', system-ui, -apple-system, sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: var(--font);
+    font-size: 13px;
+    line-height: 1.5;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    grid-template-rows: 1fr auto;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .controls {
+    grid-row: 1 / 3;
+    background: var(--surface-1);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 20px;
+  }
+  .controls::-webkit-scrollbar { width: 4px; }
+  .controls::-webkit-scrollbar-track { background: transparent; }
+  .controls::-webkit-scrollbar-thumb { background: var(--surface-4); border-radius: 2px; }
+
+  .controls h1 {
+    font-size: 16px; font-weight: 600; margin-bottom: 4px;
+    background: linear-gradient(135deg, var(--primary-lighter), var(--primary));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .controls .subtitle { font-size: 11px; color: var(--text-disabled); margin-bottom: 20px; }
+
+  .group { margin-bottom: 20px; }
+  .group-title {
+    font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.2px;
+    color: var(--text-disabled); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border);
+  }
+  .control { margin-bottom: 12px; }
+  .control label {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; color: var(--text-secondary); margin-bottom: 5px;
+  }
+  .control label .val {
+    font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px;
+    color: var(--primary-lighter); background: var(--primary-darker); padding: 1px 6px; border-radius: 4px;
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none; width: 100%; height: 4px; border-radius: 2px;
+    background: var(--surface-4); outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+    background: var(--primary); cursor: pointer; border: 2px solid var(--bg);
+    box-shadow: 0 0 0 2px var(--primary);
+  }
+  input[type="color"] {
+    -webkit-appearance: none; width: 32px; height: 24px; border: 1px solid var(--surface-4);
+    border-radius: 4px; background: transparent; cursor: pointer; padding: 0;
+  }
+  input[type="color"]::-webkit-color-swatch-wrapper { padding: 2px; }
+  input[type="color"]::-webkit-color-swatch { border: none; border-radius: 2px; }
+
+  .color-row { display: flex; align-items: center; gap: 8px; }
+  .color-row span { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px; color: var(--text-disabled); }
+
+  select {
+    width: 100%; background: var(--surface-3); color: var(--text-primary);
+    border: 1px solid var(--surface-4); border-radius: 6px; padding: 6px 10px;
+    font-size: 12px; font-family: var(--font); outline: none; cursor: pointer;
+  }
+  select:focus { border-color: var(--primary); }
+
+  .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
+  .toggle-row span { font-size: 12px; color: var(--text-secondary); }
+  .toggle {
+    width: 36px; height: 20px; background: var(--surface-4); border-radius: 10px;
+    position: relative; cursor: pointer; transition: background 0.2s;
+  }
+  .toggle.active { background: var(--primary); }
+  .toggle::after {
+    content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px;
+    background: white; border-radius: 50%; transition: transform 0.2s;
+  }
+  .toggle.active::after { transform: translateX(16px); }
+
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+  .preset-btn {
+    font-size: 11px; font-family: var(--font); padding: 5px 12px; border-radius: 20px;
+    border: 1px solid var(--surface-4); background: var(--surface-2); color: var(--text-secondary);
+    cursor: pointer; transition: all 0.15s;
+  }
+  .preset-btn:hover { border-color: var(--primary); color: var(--primary-lighter); background: var(--primary-darker); }
+  .preset-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+  .preview {
+    overflow-y: auto; padding: 32px; display: flex; flex-direction: column; gap: 32px;
+  }
+  .preview::-webkit-scrollbar { width: 6px; }
+  .preview::-webkit-scrollbar-track { background: transparent; }
+  .preview::-webkit-scrollbar-thumb { background: var(--surface-4); border-radius: 3px; }
+
+  .preview-section-title {
+    font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.2px;
+    color: var(--text-disabled); margin-bottom: 12px;
+  }
+
+  .dash-preview {
+    display: grid; grid-template-columns: 260px 1fr; border-radius: var(--radius);
+    overflow: hidden; border: 1px solid var(--border); min-height: 520px; background: var(--bg);
+  }
+  .dash-sidebar {
+    background: var(--surface-1); border-right: 1px solid var(--border); padding: 16px 0;
+    display: flex; flex-direction: column;
+  }
+  .dash-sidebar .logo {
+    padding: 0 16px 16px; display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid var(--border); margin-bottom: 12px;
+  }
+  .dash-sidebar .logo .icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-lighter));
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: white;
+  }
+  .dash-sidebar .logo span { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+
+  .menu-group-label {
+    font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--text-disabled); padding: 12px 16px 6px;
+  }
+  .menu-item {
+    display: flex; align-items: center; gap: 10px; padding: 8px 16px; margin: 1px 8px;
+    border-radius: 8px; font-size: 13px; color: var(--text-secondary); cursor: pointer; transition: all 0.15s;
+  }
+  .menu-item:hover { background: rgba(255,255,255,0.04); color: var(--text-primary); }
+  .menu-item.active { background: rgba(128, 90, 245, 0.12); color: var(--primary-lighter); }
+  .menu-item .dot {
+    width: 20px; height: 20px; border-radius: 6px; display: flex;
+    align-items: center; justify-content: center; font-size: 10px; flex-shrink: 0;
+  }
+
+  .dash-main { display: flex; flex-direction: column; }
+  .dash-header {
+    height: 56px; border-bottom: 1px solid var(--border); display: flex;
+    align-items: center; justify-content: space-between; padding: 0 24px; background: var(--surface-1);
+  }
+  .dash-header .breadcrumb { font-size: 12px; color: var(--text-disabled); }
+  .dash-header .breadcrumb b { color: var(--text-primary); font-weight: 500; }
+  .dash-header .user-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--info));
+    display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: white;
+  }
+  .dash-content { flex: 1; padding: 24px; overflow-y: auto; }
+
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .kpi-card {
+    border-radius: var(--radius); padding: 20px; border: 1px solid var(--border); transition: all 0.2s;
+  }
+  .kpi-card:hover { border-color: rgba(255,255,255,0.1); transform: translateY(-1px); }
+  .kpi-card .kpi-label {
+    font-size: 11px; color: var(--text-disabled); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
+  }
+  .kpi-card .kpi-value { font-size: 24px; font-weight: 600; margin-bottom: 4px; }
+  .kpi-card .kpi-change { font-size: 11px; display: flex; align-items: center; gap: 4px; }
+  .kpi-card .kpi-change.up { color: var(--success); }
+  .kpi-card .kpi-change.down { color: var(--error); }
+
+  .chart-area {
+    border-radius: var(--radius); border: 1px solid var(--border); padding: 20px; margin-bottom: 16px;
+  }
+  .chart-area .chart-title { font-size: 14px; font-weight: 600; margin-bottom: 16px; }
+  .chart-bars { display: flex; align-items: flex-end; gap: 8px; height: 120px; padding-top: 8px; }
+  .chart-bar { flex: 1; border-radius: 4px 4px 0 0; min-height: 8px; transition: all 0.3s; }
+  .chart-bar:hover { opacity: 0.8; }
+  .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  .component-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .btn-preview {
+    padding: 8px 20px; border: none; font-family: var(--font); font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .chip-preview {
+    display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px;
+    font-size: 11px; font-weight: 500; font-family: var(--font);
+  }
+  .input-preview {
+    padding: 10px 14px; font-family: var(--font); font-size: 13px; outline: none; width: 260px;
+    transition: border-color 0.2s; color: var(--text-primary);
+  }
+  .input-preview::placeholder { color: var(--text-disabled); }
+  .input-preview:focus { border-color: var(--primary) !important; }
+
+  .tool-card-preview {
+    padding: 20px; border: 1px solid var(--border); display: flex; flex-direction: column;
+    gap: 8px; width: 240px; transition: all 0.2s; cursor: pointer;
+  }
+  .tool-card-preview:hover { border-color: rgba(255,255,255,0.1); transform: translateY(-2px); }
+  .tool-card-preview .tool-icon {
+    width: 40px; height: 40px; border-radius: 10px; display: flex;
+    align-items: center; justify-content: center; font-size: 18px;
+  }
+  .tool-card-preview .tool-name { font-size: 14px; font-weight: 600; }
+  .tool-card-preview .tool-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
+  .tool-card-preview .tool-badge {
+    display: inline-flex; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; width: fit-content;
+  }
+
+  .prompt-area {
+    border-top: 1px solid var(--border); background: var(--surface-1); padding: 16px 24px;
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .prompt-text {
+    flex: 1; font-size: 12px; line-height: 1.6; color: var(--text-secondary);
+    font-family: 'SF Mono', 'Fira Code', monospace; max-height: 120px; overflow-y: auto;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  .copy-btn {
+    background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 8px;
+    font-size: 12px; font-weight: 500; font-family: var(--font); cursor: pointer;
+    white-space: nowrap; transition: all 0.15s; flex-shrink: 0;
+  }
+  .copy-btn:hover { background: var(--primary-light); }
+  .copy-btn.copied { background: var(--success); }
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <h1>MarketingTool.pro</h1>
+  <div class="subtitle">Design System Playground</div>
+
+  <div class="presets">
+    <button class="preset-btn active" onclick="applyPreset('default')">Default</button>
+    <button class="preset-btn" onclick="applyPreset('glassmorphism')">Glass</button>
+    <button class="preset-btn" onclick="applyPreset('sharp')">Sharp</button>
+    <button class="preset-btn" onclick="applyPreset('airy')">Airy</button>
+    <button class="preset-btn" onclick="applyPreset('compact')">Compact</button>
+  </div>
+
+  <div class="group">
+    <div class="group-title">Brand Colors</div>
+    <div class="control">
+      <label>Primary <span class="val" id="v-primary">#805AF5</span></label>
+      <div class="color-row">
+        <input type="color" id="c-primary" value="#805AF5" oninput="updateColor('primary', this.value)">
+        <span>Main accent / CTA</span>
+      </div>
+    </div>
+    <div class="control">
+      <label>Background <span class="val" id="v-bg">#0E0C15</span></label>
+      <div class="color-row">
+        <input type="color" id="c-bg" value="#0E0C15" oninput="updateColor('bg', this.value)">
+        <span>App background</span>
+      </div>
+    </div>
+    <div class="control">
+      <label>Surface <span class="val" id="v-surface">#16181E</span></label>
+      <div class="color-row">
+        <input type="color" id="c-surface" value="#16181E" oninput="updateColor('surface', this.value)">
+        <span>Cards &amp; sidebar</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="group-title">Layout</div>
+    <div class="control">
+      <label>Sidebar Width <span class="val" id="v-sidebar-w">260</span></label>
+      <input type="range" min="200" max="320" value="260" oninput="updateState('sidebarWidth', +this.value)">
+    </div>
+    <div class="control">
+      <label>Content Padding <span class="val" id="v-content-pad">24</span></label>
+      <input type="range" min="12" max="48" value="24" oninput="updateState('contentPadding', +this.value)">
+    </div>
+    <div class="control">
+      <label>Card Gap <span class="val" id="v-card-gap">16</span></label>
+      <input type="range" min="8" max="32" value="16" oninput="updateState('cardGap', +this.value)">
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="group-title">Shape &amp; Depth</div>
+    <div class="control">
+      <label>Card Radius <span class="val" id="v-card-radius">12</span></label>
+      <input type="range" min="0" max="24" value="12" oninput="updateState('cardRadius', +this.value)">
+    </div>
+    <div class="control">
+      <label>Button Radius <span class="val" id="v-btn-radius">8</span></label>
+      <input type="range" min="0" max="24" value="8" oninput="updateState('btnRadius', +this.value)">
+    </div>
+    <div class="control">
+      <label>Input Radius <span class="val" id="v-input-radius">8</span></label>
+      <input type="range" min="0" max="20" value="8" oninput="updateState('inputRadius', +this.value)">
+    </div>
+    <div class="control">
+      <label>Shadow Intensity <span class="val" id="v-shadow">0.30</span></label>
+      <input type="range" min="0" max="80" value="30" oninput="updateState('shadowIntensity', +this.value)">
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="group-title">Typography</div>
+    <div class="control">
+      <label>Font</label>
+      <select onchange="updateState('font', this.value)">
+        <option value="'Sora', system-ui, sans-serif" selected>Sora</option>
+        <option value="'Inter', system-ui, sans-serif">Inter</option>
+        <option value="'DM Sans', system-ui, sans-serif">DM Sans</option>
+        <option value="system-ui, -apple-system, sans-serif">System</option>
+        <option value="'Outfit', system-ui, sans-serif">Outfit</option>
+      </select>
+    </div>
+    <div class="control">
+      <label>Base Size <span class="val" id="v-base-size">13</span></label>
+      <input type="range" min="11" max="16" value="13" oninput="updateState('baseFontSize', +this.value)">
+    </div>
+    <div class="control">
+      <label>Heading Weight <span class="val" id="v-heading-w">600</span></label>
+      <input type="range" min="400" max="800" step="100" value="600" oninput="updateState('headingWeight', +this.value)">
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="group-title">Effects</div>
+    <div class="control">
+      <div class="toggle-row">
+        <span>Glassmorphism</span>
+        <div class="toggle" id="t-glass" onclick="toggleState('glass')"></div>
+      </div>
+    </div>
+    <div class="control">
+      <div class="toggle-row">
+        <span>Gradient KPIs</span>
+        <div class="toggle active" id="t-gradient-kpi" onclick="toggleState('gradientKpi')"></div>
+      </div>
+    </div>
+    <div class="control">
+      <div class="toggle-row">
+        <span>Hover Lift</span>
+        <div class="toggle active" id="t-hover-lift" onclick="toggleState('hoverLift')"></div>
+      </div>
+    </div>
+    <div class="control">
+      <div class="toggle-row">
+        <span>Border Glow</span>
+        <div class="toggle" id="t-border-glow" onclick="toggleState('borderGlow')"></div>
+      </div>
+    </div>
+    <div class="control">
+      <label>Card Border Opacity <span class="val" id="v-border-opacity">0.05</span></label>
+      <input type="range" min="0" max="25" value="5" oninput="updateState('borderOpacity', +this.value)">
+    </div>
+  </div>
+</div>
+
+<div class="preview" id="preview">
+  <div>
+    <div class="preview-section-title">Dashboard Layout</div>
+    <div class="dash-preview" id="dash-preview">
+      <div class="dash-sidebar" id="dash-sidebar">
+        <div class="logo">
+          <div class="icon">M</div>
+          <span>MarketingTool</span>
+        </div>
+        <div class="menu-group-label">Main</div>
+        <div class="menu-item active"><div class="dot">&#x1f4ca;</div> Smart Dashboard</div>
+        <div class="menu-item"><div class="dot">&#x1f916;</div> AI Chat</div>
+        <div class="menu-item"><div class="dot">&#x1f3af;</div> Command Centre</div>
+        <div class="menu-item"><div class="dot">&#x1f4e2;</div> Campaigns</div>
+        <div class="menu-item"><div class="dot">&#x1f6e1;&#xfe0f;</div> 360 Meta Audit</div>
+        <div class="menu-item"><div class="dot">&#x1f50d;</div> Ad Library</div>
+        <div class="menu-item"><div class="dot">&#x1f4c8;</div> Analytics</div>
+        <div class="menu-item"><div class="dot">&#x1f4cb;</div> Reports</div>
+        <div class="menu-group-label">Platforms</div>
+        <div class="menu-item"><div class="dot" style="color:#4285F4">G</div> Google Ads</div>
+        <div class="menu-item"><div class="dot" style="color:#1877F2">f</div> Meta / Facebook</div>
+        <div class="menu-group-label">Tools</div>
+        <div class="menu-item"><div class="dot">&#x26a1;</div> All Tools (208)</div>
+        <div class="menu-group-label">Support</div>
+        <div class="menu-item"><div class="dot">&#x1f4b3;</div> Pricing</div>
+        <div class="menu-item"><div class="dot">&#x2753;</div> Help Center</div>
+        <div class="menu-item"><div class="dot">&#x2699;&#xfe0f;</div> Settings</div>
+      </div>
+      <div class="dash-main">
+        <div class="dash-header">
+          <div class="breadcrumb">Dashboard / <b>Overview</b></div>
+          <div class="user-avatar">L</div>
+        </div>
+        <div class="dash-content" id="dash-content">
+          <div class="kpi-grid" id="kpi-grid">
+            <div class="kpi-card" id="kpi-1">
+              <div class="kpi-label">Total Spend</div>
+              <div class="kpi-value">$24,580</div>
+              <div class="kpi-change up">&#x25b2; 12.5% vs last month</div>
+            </div>
+            <div class="kpi-card" id="kpi-2">
+              <div class="kpi-label">Revenue</div>
+              <div class="kpi-value">$89,240</div>
+              <div class="kpi-change up">&#x25b2; 8.3% vs last month</div>
+            </div>
+            <div class="kpi-card" id="kpi-3">
+              <div class="kpi-label">ROAS</div>
+              <div class="kpi-value">3.63x</div>
+              <div class="kpi-change down">&#x25bc; 2.1% vs last month</div>
+            </div>
+            <div class="kpi-card" id="kpi-4">
+              <div class="kpi-label">Conversions</div>
+              <div class="kpi-value">1,847</div>
+              <div class="kpi-change up">&#x25b2; 15.7% vs last month</div>
+            </div>
+          </div>
+          <div class="chart-grid">
+            <div class="chart-area" id="chart-1">
+              <div class="chart-title">Spend vs Revenue</div>
+              <div class="chart-bars" id="chart-bars-1"></div>
+            </div>
+            <div class="chart-area" id="chart-2">
+              <div class="chart-title">Platform Breakdown</div>
+              <div id="donut-area" style="display:flex;align-items:center;justify-content:center;height:120px;gap:24px;">
+                <svg width="100" height="100" viewBox="0 0 100 100" id="donut-svg">
+                  <circle cx="50" cy="50" r="40" fill="none" stroke-width="16" stroke="var(--primary)" stroke-dasharray="150 252" stroke-dashoffset="-63" />
+                  <circle cx="50" cy="50" r="40" fill="none" stroke-width="16" stroke="var(--info)" stroke-dasharray="63 252" stroke-dashoffset="-63" />
+                  <circle cx="50" cy="50" r="40" fill="none" stroke-width="16" stroke="var(--warning)" stroke-dasharray="39 252" stroke-dashoffset="150" />
+                </svg>
+                <div style="font-size:11px;line-height:2;color:var(--text-secondary)">
+                  <div><span style="color:var(--primary)">&#x25cf;</span> Google Ads 60%</div>
+                  <div><span style="color:var(--info)">&#x25cf;</span> Meta Ads 25%</div>
+                  <div><span style="color:var(--warning)">&#x25cf;</span> Other 15%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="preview-section-title">Buttons</div>
+    <div class="component-row" id="btn-row">
+      <button class="btn-preview" id="btn-primary">Generate</button>
+      <button class="btn-preview" id="btn-outlined">Run Workflow</button>
+      <button class="btn-preview" id="btn-ghost">View All</button>
+      <button class="btn-preview" id="btn-danger">Kill Campaign</button>
+    </div>
+  </div>
+
+  <div>
+    <div class="preview-section-title">Chips &amp; Badges</div>
+    <div class="component-row" id="chip-row">
+      <span class="chip-preview" id="chip-active">Active</span>
+      <span class="chip-preview" id="chip-paused">Paused</span>
+      <span class="chip-preview" id="chip-cat">Email Marketing</span>
+      <span class="chip-preview" id="chip-cat2">Social Media</span>
+      <span class="chip-preview" id="chip-cat3">SEO</span>
+    </div>
+  </div>
+
+  <div>
+    <div class="preview-section-title">Input Fields</div>
+    <div class="component-row">
+      <input class="input-preview" id="input-1" type="text" placeholder="Search tools by name, category...">
+      <input class="input-preview" id="input-2" type="text" placeholder="Enter your prompt here..." style="width:300px">
+    </div>
+  </div>
+
+  <div>
+    <div class="preview-section-title">Tool Cards</div>
+    <div class="component-row" id="tool-cards-row">
+      <div class="tool-card-preview" id="tc-1">
+        <div class="tool-icon" style="background:rgba(128,90,245,0.12);color:var(--primary)">&#x2728;</div>
+        <div class="tool-badge" style="background:rgba(128,90,245,0.12);color:var(--primary)">Email Marketing</div>
+        <div class="tool-name">Cold Outreach Email</div>
+        <div class="tool-desc">Generate high-converting cold email sequences with AI personalization</div>
+      </div>
+      <div class="tool-card-preview" id="tc-2">
+        <div class="tool-icon" style="background:rgba(27,162,219,0.12);color:var(--info)">&#x1f4ca;</div>
+        <div class="tool-badge" style="background:rgba(27,162,219,0.12);color:var(--info)">Analytics</div>
+        <div class="tool-name">Ad Copy Analyzer</div>
+        <div class="tool-desc">Analyze ad copy performance and get AI-powered improvement suggestions</div>
+      </div>
+      <div class="tool-card-preview" id="tc-3">
+        <div class="tool-icon" style="background:rgba(62,183,94,0.12);color:var(--success)">&#x1f3af;</div>
+        <div class="tool-badge" style="background:rgba(62,183,94,0.12);color:var(--success)">Google Ads</div>
+        <div class="tool-name">Google Ads Grader</div>
+        <div class="tool-desc">Get a comprehensive audit of your Google Ads account performance</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="prompt-area">
+  <div class="prompt-text" id="prompt-output">Adjust the controls to generate a design prompt...</div>
+  <button class="copy-btn" id="copy-btn" onclick="copyPrompt()">Copy Prompt</button>
+</div>
+
+<script>
+const DEFAULTS = {
+  primary: '#805AF5', bg: '#0E0C15', surface: '#16181E',
+  sidebarWidth: 260, contentPadding: 24, cardGap: 16,
+  cardRadius: 12, btnRadius: 8, inputRadius: 8, shadowIntensity: 30,
+  font: "'Sora', system-ui, sans-serif", baseFontSize: 13, headingWeight: 600,
+  glass: false, gradientKpi: true, hoverLift: true, borderGlow: false, borderOpacity: 5
+};
+
+const state = { ...DEFAULTS };
+
+const PRESETS = {
+  default: { ...DEFAULTS },
+  glassmorphism: { ...DEFAULTS, glass: true, borderGlow: true, borderOpacity: 8, shadowIntensity: 40, cardRadius: 16, btnRadius: 12, inputRadius: 12 },
+  sharp: { ...DEFAULTS, cardRadius: 2, btnRadius: 2, inputRadius: 2, glass: false, borderGlow: false, shadowIntensity: 10, borderOpacity: 10, headingWeight: 700 },
+  airy: { ...DEFAULTS, contentPadding: 40, cardGap: 24, cardRadius: 20, btnRadius: 20, inputRadius: 14, shadowIntensity: 15, baseFontSize: 14, sidebarWidth: 280 },
+  compact: { ...DEFAULTS, contentPadding: 14, cardGap: 10, cardRadius: 8, btnRadius: 6, inputRadius: 6, baseFontSize: 12, sidebarWidth: 220, headingWeight: 500 }
+};
+
+function updateState(key, value) { state[key] = value; renderAll(); }
+function updateColor(key, value) { state[key] = value; document.getElementById('v-' + key).textContent = value; renderAll(); }
+function toggleState(key) {
+  state[key] = !state[key];
+  var id = 't-' + key.replace(/([A-Z])/g, function(m) { return '-' + m.toLowerCase(); });
+  document.getElementById(id).classList.toggle('active', state[key]);
+  renderAll();
+}
+
+function applyPreset(name) {
+  Object.assign(state, PRESETS[name]);
+  document.querySelectorAll('.preset-btn').forEach(function(b) { b.classList.remove('active'); });
+  event.target.classList.add('active');
+  syncControls();
+  renderAll();
+}
+
+function syncControls() {
+  document.getElementById('c-primary').value = state.primary;
+  document.getElementById('v-primary').textContent = state.primary;
+  document.getElementById('c-bg').value = state.bg;
+  document.getElementById('v-bg').textContent = state.bg;
+  document.getElementById('c-surface').value = state.surface;
+  document.getElementById('v-surface').textContent = state.surface;
+  document.getElementById('t-glass').classList.toggle('active', state.glass);
+  document.getElementById('t-gradient-kpi').classList.toggle('active', state.gradientKpi);
+  document.getElementById('t-hover-lift').classList.toggle('active', state.hoverLift);
+  document.getElementById('t-border-glow').classList.toggle('active', state.borderGlow);
+
+  var sliderMap = [
+    ['v-sidebar-w', 'sidebarWidth'], ['v-content-pad', 'contentPadding'], ['v-card-gap', 'cardGap'],
+    ['v-card-radius', 'cardRadius'], ['v-btn-radius', 'btnRadius'], ['v-input-radius', 'inputRadius'],
+    ['v-shadow', 'shadowIntensity'], ['v-base-size', 'baseFontSize'], ['v-heading-w', 'headingWeight'],
+    ['v-border-opacity', 'borderOpacity']
+  ];
+  sliderMap.forEach(function(pair) {
+    var el = document.getElementById(pair[0]);
+    if (!el) return;
+    var ctrl = el.closest('.control');
+    var slider = ctrl ? ctrl.querySelector('input[type="range"]') : null;
+    if (slider) slider.value = state[pair[1]];
+  });
+}
+
+function hexToRgb(hex) {
+  return { r: parseInt(hex.slice(1,3),16), g: parseInt(hex.slice(3,5),16), b: parseInt(hex.slice(5,7),16) };
+}
+function lighten(hex, amount) {
+  var c = hexToRgb(hex);
+  return '#' + [c.r, c.g, c.b].map(function(v) { return Math.min(255, v + amount).toString(16).padStart(2, '0'); }).join('');
+}
+
+function buildChartBars() {
+  var container = document.getElementById('chart-bars-1');
+  while (container.firstChild) container.removeChild(container.firstChild);
+  var vals = [45, 60, 35, 80, 55, 70, 90, 50, 65, 75, 85, 40];
+  vals.forEach(function(v, i) {
+    var bar = document.createElement('div');
+    bar.className = 'chart-bar';
+    bar.style.height = v + '%';
+    bar.style.background = i % 2 === 0 ? state.primary : 'rgba(27,162,219,0.6)';
+    bar.style.borderRadius = Math.min(state.cardRadius, 6) + 'px ' + Math.min(state.cardRadius, 6) + 'px 0 0';
+    container.appendChild(bar);
+  });
+}
+
+function renderAll() {
+  document.getElementById('v-sidebar-w').textContent = state.sidebarWidth;
+  document.getElementById('v-content-pad').textContent = state.contentPadding;
+  document.getElementById('v-card-gap').textContent = state.cardGap;
+  document.getElementById('v-card-radius').textContent = state.cardRadius;
+  document.getElementById('v-btn-radius').textContent = state.btnRadius;
+  document.getElementById('v-input-radius').textContent = state.inputRadius;
+  document.getElementById('v-shadow').textContent = (state.shadowIntensity / 100).toFixed(2);
+  document.getElementById('v-base-size').textContent = state.baseFontSize;
+  document.getElementById('v-heading-w').textContent = state.headingWeight;
+  document.getElementById('v-border-opacity').textContent = (state.borderOpacity / 100).toFixed(2);
+
+  var root = document.documentElement.style;
+  root.setProperty('--primary', state.primary);
+  root.setProperty('--bg', state.bg);
+  root.setProperty('--surface-1', state.surface);
+  root.setProperty('--surface-2', lighten(state.surface, 8));
+  root.setProperty('--surface-3', lighten(state.surface, 16));
+  root.setProperty('--surface-4', lighten(state.surface, 30));
+  root.setProperty('--font', state.font);
+  root.setProperty('--card-radius', state.cardRadius + 'px');
+  root.setProperty('--radius', state.cardRadius + 'px');
+  root.setProperty('--border', 'rgba(255,255,255,' + (state.borderOpacity / 100) + ')');
+
+  var shadow = state.shadowIntensity / 100;
+  var borderOp = state.borderOpacity / 100;
+  var pc = hexToRgb(state.primary);
+
+  document.getElementById('dash-preview').style.gridTemplateColumns = state.sidebarWidth + 'px 1fr';
+  document.getElementById('dash-content').style.padding = state.contentPadding + 'px';
+  document.getElementById('dash-content').style.fontSize = state.baseFontSize + 'px';
+  document.getElementById('dash-preview').style.fontFamily = state.font;
+  document.querySelector('.dash-preview').style.background = state.bg;
+  document.querySelector('.dash-sidebar').style.background = state.surface;
+  document.querySelector('.dash-header').style.background = state.surface;
+
+  document.getElementById('kpi-grid').style.gap = state.cardGap + 'px';
+  var kpiGrads = [
+    'linear-gradient(135deg, rgba('+pc.r+','+pc.g+','+pc.b+',0.08), rgba('+pc.r+','+pc.g+','+pc.b+',0.02))',
+    'linear-gradient(135deg, rgba(27,162,219,0.08), rgba(27,162,219,0.02))',
+    'linear-gradient(135deg, rgba(62,183,94,0.08), rgba(62,183,94,0.02))',
+    'linear-gradient(135deg, rgba(255,200,118,0.08), rgba(255,200,118,0.02))'
+  ];
+  document.querySelectorAll('.kpi-card').forEach(function(kpi, i) {
+    kpi.style.borderRadius = state.cardRadius + 'px';
+    kpi.style.border = '1px solid rgba(255,255,255,' + borderOp + ')';
+    kpi.style.background = state.gradientKpi ? kpiGrads[i] : state.surface;
+    kpi.style.boxShadow = state.glass
+      ? 'inset 0 0 8px rgba(255,255,255,0.04), 0 8px 32px rgba(0,0,0,' + shadow + ')'
+      : '0 4px 12px rgba(0,0,0,' + (shadow * 0.5) + ')';
+    kpi.style.backdropFilter = state.glass ? 'blur(12px)' : 'none';
+    kpi.querySelector('.kpi-value').style.fontWeight = state.headingWeight;
+  });
+
+  document.querySelectorAll('.chart-area').forEach(function(c) {
+    c.style.borderRadius = state.cardRadius + 'px';
+    c.style.background = state.surface;
+    c.style.border = '1px solid rgba(255,255,255,' + borderOp + ')';
+    c.querySelector('.chart-title').style.fontWeight = state.headingWeight;
+  });
+  document.querySelector('.chart-grid').style.gap = state.cardGap + 'px';
+  buildChartBars();
+
+  var btnP = document.getElementById('btn-primary');
+  btnP.style.background = state.primary;
+  btnP.style.color = 'white';
+  btnP.style.borderRadius = state.btnRadius + 'px';
+  btnP.style.boxShadow = '0 2px 8px rgba(' + pc.r + ',' + pc.g + ',' + pc.b + ',' + shadow + ')';
+
+  var btnO = document.getElementById('btn-outlined');
+  btnO.style.background = 'transparent';
+  btnO.style.color = state.primary;
+  btnO.style.border = '1.5px solid ' + state.primary;
+  btnO.style.borderRadius = state.btnRadius + 'px';
+
+  var btnG = document.getElementById('btn-ghost');
+  btnG.style.background = 'transparent';
+  btnG.style.color = 'var(--text-secondary)';
+  btnG.style.border = 'none';
+  btnG.style.borderRadius = state.btnRadius + 'px';
+
+  var btnD = document.getElementById('btn-danger');
+  btnD.style.background = 'rgba(255,0,3,0.1)';
+  btnD.style.color = '#FF6B6B';
+  btnD.style.border = '1px solid rgba(255,0,3,0.2)';
+  btnD.style.borderRadius = state.btnRadius + 'px';
+
+  document.getElementById('chip-active').style.cssText = 'background:rgba(62,183,94,0.12);color:#3EB75E;border-radius:' + state.btnRadius + 'px;display:inline-flex;align-items:center;gap:4px;padding:4px 12px;font-size:11px;font-weight:500';
+  document.getElementById('chip-paused').style.cssText = 'background:rgba(255,200,118,0.12);color:#FFC876;border-radius:' + state.btnRadius + 'px;display:inline-flex;align-items:center;gap:4px;padding:4px 12px;font-size:11px;font-weight:500';
+  ['chip-cat','chip-cat2','chip-cat3'].forEach(function(id) {
+    var c = document.getElementById(id);
+    c.style.background = 'rgba(' + pc.r + ',' + pc.g + ',' + pc.b + ',0.1)';
+    c.style.color = lighten(state.primary, 60);
+    c.style.borderRadius = state.btnRadius + 'px';
+  });
+
+  document.querySelectorAll('.input-preview').forEach(function(inp) {
+    inp.style.background = state.bg;
+    inp.style.border = '1px solid rgba(255,255,255,' + (borderOp * 2) + ')';
+    inp.style.borderRadius = state.inputRadius + 'px';
+    inp.style.fontFamily = state.font;
+    inp.style.fontSize = state.baseFontSize + 'px';
+  });
+
+  document.querySelectorAll('.tool-card-preview').forEach(function(tc) {
+    tc.style.borderRadius = state.cardRadius + 'px';
+    tc.style.background = state.glass
+      ? 'linear-gradient(0deg, rgba(18,18,18,0.3), rgba(18,18,18,0.3)), rgba(248,248,248,0.01)'
+      : state.surface;
+    tc.style.border = '1px solid rgba(255,255,255,' + borderOp + ')';
+    tc.style.boxShadow = state.glass
+      ? 'inset 0 0 8px rgba(255,255,255,0.04), 0 16px 24px -8px rgba(0,0,0,' + shadow + ')'
+      : '0 2px 8px rgba(0,0,0,' + (shadow * 0.4) + ')';
+    tc.style.backdropFilter = state.glass ? 'blur(12px)' : 'none';
+    tc.querySelector('.tool-icon').style.borderRadius = Math.max(6, state.cardRadius - 2) + 'px';
+    tc.querySelector('.tool-badge').style.borderRadius = Math.max(2, state.btnRadius - 2) + 'px';
+    tc.querySelector('.tool-name').style.fontWeight = state.headingWeight;
+    tc.querySelector('.tool-name').style.fontFamily = state.font;
+  });
+
+  updatePrompt();
+}
+
+function updatePrompt() {
+  var parts = [];
+  var diffs = [];
+  if (state.primary !== DEFAULTS.primary) diffs.push('primary color ' + state.primary);
+  if (state.bg !== DEFAULTS.bg) diffs.push('background ' + state.bg);
+  if (state.surface !== DEFAULTS.surface) diffs.push('surface ' + state.surface);
+
+  var shapeDesc = [];
+  if (state.cardRadius !== DEFAULTS.cardRadius) shapeDesc.push('card radius ' + state.cardRadius + 'px');
+  if (state.btnRadius !== DEFAULTS.btnRadius) shapeDesc.push('button radius ' + state.btnRadius + 'px');
+  if (state.inputRadius !== DEFAULTS.inputRadius) shapeDesc.push('input radius ' + state.inputRadius + 'px');
+  if (shapeDesc.length) parts.push('Use ' + shapeDesc.join(', '));
+
+  if (state.sidebarWidth !== DEFAULTS.sidebarWidth) parts.push('sidebar width ' + state.sidebarWidth + 'px');
+  if (state.contentPadding !== DEFAULTS.contentPadding) parts.push('content padding ' + state.contentPadding + 'px');
+  if (state.cardGap !== DEFAULTS.cardGap) parts.push(state.cardGap + 'px gap between cards');
+
+  if (state.font !== DEFAULTS.font) {
+    var fontName = state.font.split("'")[1] || state.font.split(',')[0].trim();
+    parts.push('font family ' + fontName);
+  }
+  if (state.baseFontSize !== DEFAULTS.baseFontSize) parts.push('base font size ' + state.baseFontSize + 'px');
+  if (state.headingWeight !== DEFAULTS.headingWeight) parts.push('heading weight ' + state.headingWeight);
+
+  var effects = [];
+  if (state.glass) effects.push('glassmorphism (backdrop blur, inset glow, semi-transparent backgrounds)');
+  if (!state.gradientKpi && DEFAULTS.gradientKpi) effects.push('solid-color KPI cards (no gradient)');
+  if (!state.hoverLift && DEFAULTS.hoverLift) effects.push('no hover lift effect');
+  if (state.borderGlow) effects.push('gradient border glow on cards');
+  if (state.shadowIntensity !== DEFAULTS.shadowIntensity) {
+    var s = state.shadowIntensity / 100;
+    effects.push(s > 0.4 ? 'deep, dramatic shadows' : s > 0.2 ? 'medium shadow depth' : s > 0 ? 'subtle, light shadows' : 'no shadows');
+  }
+  if (state.borderOpacity !== DEFAULTS.borderOpacity) effects.push('border opacity ' + (state.borderOpacity / 100).toFixed(2));
+  if (effects.length) parts.push(effects.join(', '));
+  if (diffs.length) parts.unshift('Set ' + diffs.join(', '));
+
+  var prompt = parts.length > 0
+    ? 'Update the MarketingTool design system:\n\n' + parts.map(function(p, i) { return (i+1) + '. ' + p.charAt(0).toUpperCase() + p.slice(1); }).join('\n') + '\n\nApply these changes across all dashboard pages, tool cards, KPI widgets, buttons, inputs, and the sidebar navigation. Use MUI theme overrides in src/themes/ for consistency.'
+    : 'The design system is using default MarketingTool settings. Adjust controls to generate a design prompt.';
+
+  document.getElementById('prompt-output').textContent = prompt;
+}
+
+function copyPrompt() {
+  var text = document.getElementById('prompt-output').textContent;
+  navigator.clipboard.writeText(text).then(function() {
+    var btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(function() { btn.textContent = 'Copy Prompt'; btn.classList.remove('copied'); }, 1500);
+  });
+}
+
+renderAll();
+</script>
+</body>
+</html>

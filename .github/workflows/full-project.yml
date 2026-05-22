@@ -1,0 +1,223 @@
+name: Full Project Control
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Which project scope to run
+        required: true
+        default: full
+        type: choice
+        options:
+          - full
+          - phone
+          - web
+      phone_ref:
+        description: Branch or tag for the phone repo workflow run
+        required: true
+        default: main
+        type: string
+      web_ref:
+        description: Branch or tag for the web repo workflow run
+        required: true
+        default: main
+        type: string
+      run_phone_deploy:
+        description: Also trigger phone production deploy
+        required: true
+        default: false
+        type: boolean
+      run_web_deploy:
+        description: Also trigger web deploy workflow
+        required: true
+        default: false
+        type: boolean
+      publish_control_package:
+        description: Also publish this repo package workflow
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  phone-ci:
+    if: ${{ inputs.target == 'full' || inputs.target == 'phone' }}
+    environment: ORG_WORKFLOW_TOKEN
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger and watch phone CI
+        env:
+          GH_TOKEN: ${{ secrets.ORG_WORKFLOW_TOKEN }}
+          REPO: Marketingtool-pro/AiMarketingtool-pro-fbaf2fad
+          WORKFLOW: build-and-test.yml
+          REF: ${{ inputs.phone_ref }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::error::Set ORG_WORKFLOW_TOKEN as an environment secret in ai-marketingtool-llc."
+            exit 1
+          fi
+
+          DISPATCHED_AT="$(date -u +%s)"
+          gh workflow run "$WORKFLOW" --repo "$REPO" --ref "$REF"
+          RUN_ID=""
+          for _ in $(seq 1 18); do
+            RUN_ID="$(gh api "repos/$REPO/actions/workflows/$WORKFLOW/runs?per_page=20" --jq ".workflow_runs[] | select(.event==\"workflow_dispatch\" and (.created_at | fromdateiso8601) >= $DISPATCHED_AT) | .id" | head -1)"
+            if [ -n "${RUN_ID:-}" ]; then
+              break
+            fi
+            sleep 5
+          done
+          if [ -z "${RUN_ID:-}" ]; then
+            echo "::error::Could not find the dispatched phone CI run."
+            exit 1
+          fi
+
+          echo "Phone CI run: $RUN_ID"
+          gh run watch "$RUN_ID" --repo "$REPO" --exit-status
+
+  web-ci:
+    if: ${{ inputs.target == 'full' || inputs.target == 'web' }}
+    environment: ORG_WORKFLOW_TOKEN
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger and watch web CI
+        env:
+          GH_TOKEN: ${{ secrets.ORG_WORKFLOW_TOKEN }}
+          REPO: Marketingtool-pro/web-app-router-
+          WORKFLOW: node.js.yml
+          REF: ${{ inputs.web_ref }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::error::Set ORG_WORKFLOW_TOKEN as an environment secret in ai-marketingtool-llc."
+            exit 1
+          fi
+
+          DISPATCHED_AT="$(date -u +%s)"
+          gh workflow run "$WORKFLOW" --repo "$REPO" --ref "$REF"
+          RUN_ID=""
+          for _ in $(seq 1 18); do
+            RUN_ID="$(gh api "repos/$REPO/actions/workflows/$WORKFLOW/runs?per_page=20" --jq ".workflow_runs[] | select(.event==\"workflow_dispatch\" and (.created_at | fromdateiso8601) >= $DISPATCHED_AT) | .id" | head -1)"
+            if [ -n "${RUN_ID:-}" ]; then
+              break
+            fi
+            sleep 5
+          done
+          if [ -z "${RUN_ID:-}" ]; then
+            echo "::error::Could not find the dispatched web CI run."
+            exit 1
+          fi
+
+          echo "Web CI run: $RUN_ID"
+          gh run watch "$RUN_ID" --repo "$REPO" --exit-status
+
+  phone-deploy:
+    if: ${{ (inputs.target == 'full' || inputs.target == 'phone') && inputs.run_phone_deploy }}
+    needs: phone-ci
+    environment: ORG_WORKFLOW_TOKEN
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger and watch phone production deploy
+        env:
+          GH_TOKEN: ${{ secrets.ORG_WORKFLOW_TOKEN }}
+          REPO: Marketingtool-pro/AiMarketingtool-pro-fbaf2fad
+          WORKFLOW: production-deploy.yml
+          REF: ${{ inputs.phone_ref }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::error::Set ORG_WORKFLOW_TOKEN as an environment secret in ai-marketingtool-llc."
+            exit 1
+          fi
+
+          DISPATCHED_AT="$(date -u +%s)"
+          gh workflow run "$WORKFLOW" --repo "$REPO" --ref "$REF"
+          RUN_ID=""
+          for _ in $(seq 1 18); do
+            RUN_ID="$(gh api "repos/$REPO/actions/workflows/$WORKFLOW/runs?per_page=20" --jq ".workflow_runs[] | select(.event==\"workflow_dispatch\" and (.created_at | fromdateiso8601) >= $DISPATCHED_AT) | .id" | head -1)"
+            if [ -n "${RUN_ID:-}" ]; then
+              break
+            fi
+            sleep 5
+          done
+          if [ -z "${RUN_ID:-}" ]; then
+            echo "::error::Could not find the dispatched phone deploy run."
+            exit 1
+          fi
+
+          echo "Phone deploy run: $RUN_ID"
+          gh run watch "$RUN_ID" --repo "$REPO" --exit-status
+
+  web-deploy:
+    if: ${{ (inputs.target == 'full' || inputs.target == 'web') && inputs.run_web_deploy }}
+    needs: web-ci
+    environment: ORG_WORKFLOW_TOKEN
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger and watch web deploy
+        env:
+          GH_TOKEN: ${{ secrets.ORG_WORKFLOW_TOKEN }}
+          REPO: Marketingtool-pro/web-app-router-
+          WORKFLOW: google-cloudrun-docker.yml
+          REF: ${{ inputs.web_ref }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::error::Set ORG_WORKFLOW_TOKEN as an environment secret in ai-marketingtool-llc."
+            exit 1
+          fi
+
+          DISPATCHED_AT="$(date -u +%s)"
+          gh workflow run "$WORKFLOW" --repo "$REPO" --ref "$REF"
+          RUN_ID=""
+          for _ in $(seq 1 18); do
+            RUN_ID="$(gh api "repos/$REPO/actions/workflows/$WORKFLOW/runs?per_page=20" --jq ".workflow_runs[] | select(.event==\"workflow_dispatch\" and (.created_at | fromdateiso8601) >= $DISPATCHED_AT) | .id" | head -1)"
+            if [ -n "${RUN_ID:-}" ]; then
+              break
+            fi
+            sleep 5
+          done
+          if [ -z "${RUN_ID:-}" ]; then
+            echo "::error::Could not find the dispatched web deploy run."
+            exit 1
+          fi
+
+          echo "Web deploy run: $RUN_ID"
+          gh run watch "$RUN_ID" --repo "$REPO" --exit-status
+
+  publish-control-package:
+    if: ${{ inputs.publish_control_package }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Trigger and watch control package publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          WORKFLOW: publish-package.yml
+          REF: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          DISPATCHED_AT="$(date -u +%s)"
+          gh workflow run "$WORKFLOW" --repo "$REPO" --ref "$REF"
+          RUN_ID=""
+          for _ in $(seq 1 18); do
+            RUN_ID="$(gh api "repos/$REPO/actions/workflows/$WORKFLOW/runs?per_page=20" --jq ".workflow_runs[] | select(.event==\"workflow_dispatch\" and (.created_at | fromdateiso8601) >= $DISPATCHED_AT) | .id" | head -1)"
+            if [ -n "${RUN_ID:-}" ]; then
+              break
+            fi
+            sleep 5
+          done
+          if [ -z "${RUN_ID:-}" ]; then
+            echo "::error::Could not find the dispatched control package publish run."
+            exit 1
+          fi
+
+          echo "Control package run: $RUN_ID"
+          gh run watch "$RUN_ID" --repo "$REPO" --exit-status

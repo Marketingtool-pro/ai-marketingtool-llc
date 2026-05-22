@@ -1,0 +1,108 @@
+diff --git a/node_modules/@react-native-firebase/app/ios/RNFBApp/RCTConvert+FIRApp.h b/node_modules/@react-native-firebase/app/ios/RNFBApp/RCTConvert+FIRApp.h
+index 73c0982..309f460 100644
+--- a/node_modules/@react-native-firebase/app/ios/RNFBApp/RCTConvert+FIRApp.h
++++ b/node_modules/@react-native-firebase/app/ios/RNFBApp/RCTConvert+FIRApp.h
+@@ -16,7 +16,13 @@
+  */
+ 
+ #import <FirebaseCore/FirebaseCore.h>
++#if __has_include(<React/RCTConvert.h>)
+ #import <React/RCTConvert.h>
++#elif __has_include("RCTConvert.h")
++#import "RCTConvert.h"
++#else
++@import React;
++#endif
+ 
+ @interface RCTConvert (FIRApp)
+ + (FIRApp *)firAppFromString:(NSString *)appName;
+diff --git a/node_modules/@react-native-firebase/app/ios/RNFBApp/RCTConvert+FIROptions.h b/node_modules/@react-native-firebase/app/ios/RNFBApp/RCTConvert+FIROptions.h
+index 470ac35..92937d7 100644
+--- a/node_modules/@react-native-firebase/app/ios/RNFBApp/RCTConvert+FIROptions.h
++++ b/node_modules/@react-native-firebase/app/ios/RNFBApp/RCTConvert+FIROptions.h
+@@ -16,7 +16,13 @@
+  */
+ 
+ #import <FirebaseCore/FirebaseCore.h>
++#if __has_include(<React/RCTConvert.h>)
+ #import <React/RCTConvert.h>
++#elif __has_include("RCTConvert.h")
++#import "RCTConvert.h"
++#else
++@import React;
++#endif
+ 
+ @interface RCTConvert (FIROptions)
+ + (FIROptions *)convertRawOptions:(NSDictionary *)rawOptions;
+diff --git a/node_modules/@react-native-firebase/app/ios/RNFBApp/RNFBAppModule.h b/node_modules/@react-native-firebase/app/ios/RNFBApp/RNFBAppModule.h
+index 894c019..d8c0771 100644
+--- a/node_modules/@react-native-firebase/app/ios/RNFBApp/RNFBAppModule.h
++++ b/node_modules/@react-native-firebase/app/ios/RNFBApp/RNFBAppModule.h
+@@ -17,7 +17,13 @@
+ 
+ #import <Foundation/Foundation.h>
+ 
++#if __has_include(<React/RCTBridgeModule.h>)
+ #import <React/RCTBridgeModule.h>
++#elif __has_include("RCTBridgeModule.h")
++#import "RCTBridgeModule.h"
++#else
++@import React;
++#endif
+ 
+ @interface RNFBAppModule : NSObject <RCTBridgeModule>
+ 
+diff --git a/node_modules/@react-native-firebase/app/ios/RNFBApp/RNFBRCTEventEmitter.h b/node_modules/@react-native-firebase/app/ios/RNFBApp/RNFBRCTEventEmitter.h
+index a9ab51a..806f215 100644
+--- a/node_modules/@react-native-firebase/app/ios/RNFBApp/RNFBRCTEventEmitter.h
++++ b/node_modules/@react-native-firebase/app/ios/RNFBApp/RNFBRCTEventEmitter.h
+@@ -16,7 +16,13 @@
+  */
+ 
+ #import <Foundation/Foundation.h>
++#if __has_include(<React/RCTEventEmitter.h>)
+ #import <React/RCTEventEmitter.h>
++#elif __has_include("RCTEventEmitter.h")
++#import "RCTEventEmitter.h"
++#else
++@import React;
++#endif
+ 
+ /**
+  * Listeners for Firebase events and emits them to the JS layer
+diff --git a/node_modules/@react-native-firebase/app/ios/RNFBApp/RNFBSharedUtils.h b/node_modules/@react-native-firebase/app/ios/RNFBApp/RNFBSharedUtils.h
+index ebfe513..62498aa 100644
+--- a/node_modules/@react-native-firebase/app/ios/RNFBApp/RNFBSharedUtils.h
++++ b/node_modules/@react-native-firebase/app/ios/RNFBApp/RNFBSharedUtils.h
+@@ -19,7 +19,13 @@
+ #define RNFBSharedUtils_h
+ 
+ #import <FirebaseCore/FirebaseCore.h>
++#if __has_include(<React/RCTBridgeModule.h>)
+ #import <React/RCTBridgeModule.h>
++#elif __has_include("RCTBridgeModule.h")
++#import "RCTBridgeModule.h"
++#else
++@import React;
++#endif
+ 
+ #ifdef DEBUG
+ #define DLog(fmt, ...) NSLog((@"%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__);
+diff --git a/node_modules/@react-native-firebase/app/ios/RNFBApp/RNFBUtilsModule.h b/node_modules/@react-native-firebase/app/ios/RNFBApp/RNFBUtilsModule.h
+index 43ec807..e53558e 100644
+--- a/node_modules/@react-native-firebase/app/ios/RNFBApp/RNFBUtilsModule.h
++++ b/node_modules/@react-native-firebase/app/ios/RNFBApp/RNFBUtilsModule.h
+@@ -18,7 +18,13 @@
+ #import <Foundation/Foundation.h>
+ #import <Photos/Photos.h>
+ 
++#if __has_include(<React/RCTBridgeModule.h>)
+ #import <React/RCTBridgeModule.h>
++#elif __has_include("RCTBridgeModule.h")
++#import "RCTBridgeModule.h"
++#else
++@import React;
++#endif
+ 
+ @interface RNFBUtilsModule : NSObject <RCTBridgeModule>
+ 

@@ -1,0 +1,18 @@
+.DS_Store
+Thumbs.db
+.claude/
+*.pyc
+__pycache__/
+
+# Large source files (exceed GitHub LFS free quota)
+*.blend
+*.fig
+*.psd
+
+# Large videos that exceed LFS free quota
+e-commerce-online-shopping-4k-2025-12-09-06-33-23-utc.mp4
+advanced-data-visualization-for-digital-marketing-2026-01-22-18-52-41-utc.mp4
+innovative-marketing-strategies-with-digital-adver-2025-12-18-01-06-38-utc.mp4
+
+# Non-marketing video
+Star_BigSurStyle_01.mp4

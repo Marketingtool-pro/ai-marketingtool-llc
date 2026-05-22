@@ -1,0 +1,20 @@
+node_modules
+.DS_Store
+dist
+dist-ssr
+.env*
+.local
+*.local
+.nitro
+.tanstack
+.wrangler
+.output
+.vinxi
+__unconfig*
+todos.json
+public/videos/social-hero.mov
+public/videos/google-hero.mp4
+public/videos/seo-hero.mp4
+
+# LangGraph API
+.langgraph_api
