@@ -1,0 +1,5 @@
+<dependency>
+  <groupId>com.facebook.react</groupId>
+  <artifactId>react-android</artifactId>
+  <version>0.83.6-e2e.1</version>
+</dependency>
