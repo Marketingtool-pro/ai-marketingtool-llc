@@ -1,0 +1,10 @@
+.github/
+docs/
+Developer/
+.claude/
+.git/
+.gitignore
+.nvmrc
+node_modules/
+*.log
+tsconfig.json
