@@ -5,6 +5,15 @@ export function useRouter() {
   const location = useLocation();
   const params = useParams();
 
+  const sanitizeUrl = (url) => {
+    if (!url) return '';
+    const trimmed = url.trim();
+    if (trimmed.toLowerCase().startsWith('javascript:')) {
+      return 'about:blank';
+    }
+    return trimmed;
+  };
+
   const push = (path) => {
     try {
       const appOrigin = window.location.origin;
@@ -15,7 +24,7 @@ export function useRouter() {
         navigate(url.pathname + url.search + url.hash);
       } else {
         // External URL: full page reload
-        window.location.href = path;
+        window.location.href = sanitizeUrl(path);
       }
     } catch {
       // Fallback: assume it's relative
@@ -31,7 +40,7 @@ export function useRouter() {
       if (url.origin === appOrigin) {
         navigate(url.pathname + url.search + url.hash, { replace: true });
       } else {
-        window.location.replace(path);
+        window.location.replace(sanitizeUrl(path));
       }
     } catch {
       navigate(path, { replace: true });

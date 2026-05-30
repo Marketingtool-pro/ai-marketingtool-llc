@@ -1,6 +1,15 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 
+const sanitizeMediaUrl = (url) => {
+  if (!url) return "";
+  const str = String(url).trim();
+  if (str.toLowerCase().startsWith("javascript:")) {
+    return "";
+  }
+  return str;
+};
+
 // @mui
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
@@ -1212,7 +1221,7 @@ function BenchmarksSection({ benchmarks }) {
 
 function PlatformPreviews({ variant, toolName, uploadedMedia }) {
   const [activePlatform, setActivePlatform] = useState("facebook");
-  const imgSrc = uploadedMedia?.url || variant.image_url;
+  const imgSrc = sanitizeMediaUrl(uploadedMedia?.url || variant.image_url);
   const isVideo = uploadedMedia?.type === "video";
 
   const platforms = [
@@ -1225,7 +1234,7 @@ function PlatformPreviews({ variant, toolName, uploadedMedia }) {
     if (isVideo)
       return (
         <video
-          src={uploadedMedia.url}
+          src={sanitizeMediaUrl(uploadedMedia.url)}
           muted
           loop
           autoPlay
@@ -1791,12 +1800,12 @@ function CreativeResults({
                   }}
                 >
                   {(() => {
-                    const imgSrc = hasUpload ? uploadedMedia.url : v.image_url;
+                    const imgSrc = sanitizeMediaUrl(hasUpload ? uploadedMedia.url : v.image_url);
                     const isVid = hasUpload && uploadedMedia.type === "video";
                     if (isVid)
                       return (
                         <video
-                          src={uploadedMedia.url}
+                          src={sanitizeMediaUrl(uploadedMedia.url)}
                           muted
                           loop
                           autoPlay
@@ -4433,7 +4442,7 @@ export default function ToolInlineForm({ toolSlug, onBack }) {
                   >
                     {uploadedMedia.type === "video" ? (
                       <video
-                        src={uploadedMedia.url}
+                        src={sanitizeMediaUrl(uploadedMedia.url)}
                         controls
                         style={{
                           width: "100%",
@@ -4446,7 +4455,7 @@ export default function ToolInlineForm({ toolSlug, onBack }) {
                     ) : (
                       <Box
                         component="img"
-                        src={uploadedMedia.url}
+                        src={sanitizeMediaUrl(uploadedMedia.url)}
                         alt="Uploaded"
                         sx={{ width: "100%", maxHeight: 200, objectFit: "cover", display: "block" }}
                       />

@@ -102,7 +102,7 @@ export const authService = {
       if (!oauthUrl) throw new Error('Failed to generate OAuth URL');
       const oauthUrlString = oauthUrl.toString();
 
-      if (__DEV__) console.log('[OAuth] Opening URL:', oauthUrlString);
+      if (__DEV__) console.log('[OAuth] Opening URL');
 
       // Nginx redirects auth.marketingtool.pro/oauth/success → marketingtool://oauth/success
       const result = await WebBrowser.openAuthSessionAsync(oauthUrlString, 'marketingtool://');
@@ -110,7 +110,7 @@ export const authService = {
       if (__DEV__) console.log('[OAuth] Browser result type:', result.type);
 
       if (result.type === 'success' && result.url) {
-        if (__DEV__) console.log('[OAuth] Callback URL:', result.url);
+        if (__DEV__) console.log('[OAuth] Callback received');
 
         // Check if it's a success callback
         if (result.url.includes('oauth/success') || result.url.includes('secret=')) {
