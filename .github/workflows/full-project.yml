@@ -15,7 +15,7 @@ on:
       phone_ref:
         description: Branch or tag for the phone repo workflow run
         required: true
-        default: main
+        default: Master
         type: string
       web_ref:
         description: Branch or tag for the web repo workflow run
