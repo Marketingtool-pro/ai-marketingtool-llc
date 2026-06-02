@@ -13,7 +13,6 @@ RUN npm ci --omit=dev
 COPY --from=builder /workspace/dist ./dist
 COPY public/ ./public/
 COPY scripts/ ./scripts/
-COPY .claude/ /root/.claude/
 
 EXPOSE 8080
 CMD ["node", "dist/index.js"]
