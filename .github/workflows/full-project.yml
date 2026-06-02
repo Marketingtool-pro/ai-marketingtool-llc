@@ -59,12 +59,23 @@ jobs:
             echo "::error::Set ORG_WORKFLOW_TOKEN as an environment secret in ai-marketingtool-llc."
             exit 1
           fi
-
+          if ! gh auth status >/dev/null 2>&1; then
+            echo "::error::ORG_WORKFLOW_TOKEN is invalid or unavailable for GitHub CLI authentication."
+            exit 1
+          fi
+          if ! gh api "repos/$REPO" >/dev/null 2>&1; then
+            echo "::error::ORG_WORKFLOW_TOKEN cannot access repository $REPO."
+            exit 1
+          fi
+          if ! gh api "repos/$REPO/actions/workflows/$WORKFLOW" >/dev/null 2>&1; then
+            echo "::error::ORG_WORKFLOW_TOKEN cannot access workflow $WORKFLOW in $REPO."
+            exit 1
+          fi
           DISPATCHED_AT="$(date -u +%s)"
           gh workflow run "$WORKFLOW" --repo "$REPO" --ref "$REF"
           RUN_ID=""
           for _ in $(seq 1 18); do
-            RUN_ID="$(gh api "repos/$REPO/actions/workflows/$WORKFLOW/runs?per_page=20" --jq ".workflow_runs[] | select(.event==\"workflow_dispatch\" and (.created_at | fromdateiso8601) >= $DISPATCHED_AT) | .id" | head -1)"
+            RUN_ID="$(gh api "repos/$REPO/actions/workflows/$WORKFLOW/runs?per_page=20" --jq ".workflow_runs[] | select(.event==\"workflow_dispatch\" and (.created_at | fromdateiso8601) >= $DISPATCHED_AT) | .id" | head -n 1)"
             if [ -n "${RUN_ID:-}" ]; then
               break
             fi
@@ -74,7 +85,6 @@ jobs:
             echo "::error::Could not find the dispatched phone CI run."
             exit 1
           fi
-
           echo "Phone CI run: $RUN_ID"
           gh run watch "$RUN_ID" --repo "$REPO" --exit-status
 
@@ -95,12 +105,23 @@ jobs:
             echo "::error::Set ORG_WORKFLOW_TOKEN as an environment secret in ai-marketingtool-llc."
             exit 1
           fi
-
+          if ! gh auth status >/dev/null 2>&1; then
+            echo "::error::ORG_WORKFLOW_TOKEN is invalid or unavailable for GitHub CLI authentication."
+            exit 1
+          fi
+          if ! gh api "repos/$REPO" >/dev/null 2>&1; then
+            echo "::error::ORG_WORKFLOW_TOKEN cannot access repository $REPO."
+            exit 1
+          fi
+          if ! gh api "repos/$REPO/actions/workflows/$WORKFLOW" >/dev/null 2>&1; then
+            echo "::error::ORG_WORKFLOW_TOKEN cannot access workflow $WORKFLOW in $REPO."
+            exit 1
+          fi
           DISPATCHED_AT="$(date -u +%s)"
           gh workflow run "$WORKFLOW" --repo "$REPO" --ref "$REF"
           RUN_ID=""
           for _ in $(seq 1 18); do
-            RUN_ID="$(gh api "repos/$REPO/actions/workflows/$WORKFLOW/runs?per_page=20" --jq ".workflow_runs[] | select(.event==\"workflow_dispatch\" and (.created_at | fromdateiso8601) >= $DISPATCHED_AT) | .id" | head -1)"
+            RUN_ID="$(gh api "repos/$REPO/actions/workflows/$WORKFLOW/runs?per_page=20" --jq ".workflow_runs[] | select(.event==\"workflow_dispatch\" and (.created_at | fromdateiso8601) >= $DISPATCHED_AT) | .id" | head -n 1)"
             if [ -n "${RUN_ID:-}" ]; then
               break
             fi
@@ -110,7 +131,6 @@ jobs:
             echo "::error::Could not find the dispatched web CI run."
             exit 1
           fi
-
           echo "Web CI run: $RUN_ID"
           gh run watch "$RUN_ID" --repo "$REPO" --exit-status
 
@@ -132,12 +152,23 @@ jobs:
             echo "::error::Set ORG_WORKFLOW_TOKEN as an environment secret in ai-marketingtool-llc."
             exit 1
           fi
-
+          if ! gh auth status >/dev/null 2>&1; then
+            echo "::error::ORG_WORKFLOW_TOKEN is invalid or unavailable for GitHub CLI authentication."
+            exit 1
+          fi
+          if ! gh api "repos/$REPO" >/dev/null 2>&1; then
+            echo "::error::ORG_WORKFLOW_TOKEN cannot access repository $REPO."
+            exit 1
+          fi
+          if ! gh api "repos/$REPO/actions/workflows/$WORKFLOW" >/dev/null 2>&1; then
+            echo "::error::ORG_WORKFLOW_TOKEN cannot access workflow $WORKFLOW in $REPO."
+            exit 1
+          fi
           DISPATCHED_AT="$(date -u +%s)"
           gh workflow run "$WORKFLOW" --repo "$REPO" --ref "$REF"
           RUN_ID=""
           for _ in $(seq 1 18); do
-            RUN_ID="$(gh api "repos/$REPO/actions/workflows/$WORKFLOW/runs?per_page=20" --jq ".workflow_runs[] | select(.event==\"workflow_dispatch\" and (.created_at | fromdateiso8601) >= $DISPATCHED_AT) | .id" | head -1)"
+            RUN_ID="$(gh api "repos/$REPO/actions/workflows/$WORKFLOW/runs?per_page=20" --jq ".workflow_runs[] | select(.event==\"workflow_dispatch\" and (.created_at | fromdateiso8601) >= $DISPATCHED_AT) | .id" | head -n 1)"
             if [ -n "${RUN_ID:-}" ]; then
               break
             fi
@@ -147,7 +178,6 @@ jobs:
             echo "::error::Could not find the dispatched phone deploy run."
             exit 1
           fi
-
           echo "Phone deploy run: $RUN_ID"
           gh run watch "$RUN_ID" --repo "$REPO" --exit-status
 
@@ -169,12 +199,23 @@ jobs:
             echo "::error::Set ORG_WORKFLOW_TOKEN as an environment secret in ai-marketingtool-llc."
             exit 1
           fi
-
+          if ! gh auth status >/dev/null 2>&1; then
+            echo "::error::ORG_WORKFLOW_TOKEN is invalid or unavailable for GitHub CLI authentication."
+            exit 1
+          fi
+          if ! gh api "repos/$REPO" >/dev/null 2>&1; then
+            echo "::error::ORG_WORKFLOW_TOKEN cannot access repository $REPO."
+            exit 1
+          fi
+          if ! gh api "repos/$REPO/actions/workflows/$WORKFLOW" >/dev/null 2>&1; then
+            echo "::error::ORG_WORKFLOW_TOKEN cannot access workflow $WORKFLOW in $REPO."
+            exit 1
+          fi
           DISPATCHED_AT="$(date -u +%s)"
           gh workflow run "$WORKFLOW" --repo "$REPO" --ref "$REF"
           RUN_ID=""
           for _ in $(seq 1 18); do
-            RUN_ID="$(gh api "repos/$REPO/actions/workflows/$WORKFLOW/runs?per_page=20" --jq ".workflow_runs[] | select(.event==\"workflow_dispatch\" and (.created_at | fromdateiso8601) >= $DISPATCHED_AT) | .id" | head -1)"
+            RUN_ID="$(gh api "repos/$REPO/actions/workflows/$WORKFLOW/runs?per_page=20" --jq ".workflow_runs[] | select(.event==\"workflow_dispatch\" and (.created_at | fromdateiso8601) >= $DISPATCHED_AT) | .id" | head -n 1)"
             if [ -n "${RUN_ID:-}" ]; then
               break
             fi
@@ -184,7 +225,6 @@ jobs:
             echo "::error::Could not find the dispatched web deploy run."
             exit 1
           fi
-
           echo "Web deploy run: $RUN_ID"
           gh run watch "$RUN_ID" --repo "$REPO" --exit-status
 
@@ -203,12 +243,11 @@ jobs:
           REF: ${{ github.ref_name }}
         run: |
           set -euo pipefail
-
           DISPATCHED_AT="$(date -u +%s)"
           gh workflow run "$WORKFLOW" --repo "$REPO" --ref "$REF"
           RUN_ID=""
           for _ in $(seq 1 18); do
-            RUN_ID="$(gh api "repos/$REPO/actions/workflows/$WORKFLOW/runs?per_page=20" --jq ".workflow_runs[] | select(.event==\"workflow_dispatch\" and (.created_at | fromdateiso8601) >= $DISPATCHED_AT) | .id" | head -1)"
+            RUN_ID="$(gh api "repos/$REPO/actions/workflows/$WORKFLOW/runs?per_page=20" --jq ".workflow_runs[] | select(.event==\"workflow_dispatch\" and (.created_at | fromdateiso8601) >= $DISPATCHED_AT) | .id" | head -n 1)"
             if [ -n "${RUN_ID:-}" ]; then
               break
             fi
@@ -218,6 +257,5 @@ jobs:
             echo "::error::Could not find the dispatched control package publish run."
             exit 1
           fi
-
           echo "Control package run: $RUN_ID"
           gh run watch "$RUN_ID" --repo "$REPO" --exit-status
