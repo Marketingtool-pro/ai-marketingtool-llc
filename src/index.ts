@@ -18,8 +18,19 @@ const APPWRITE_KEY = requireEnv("APPWRITE_KEY");
 const APPWRITE_PROJECT = requireEnv("APPWRITE_PROJECT");
 const WINDMILL_URL = requireEnv("WINDMILL_URL");
 const WINDMILL_TOKEN = requireEnv("WINDMILL_TOKEN");
-const GCP_PROJECT = requireEnv("GCP_PROJECT");
-const GCP_REGION = process.env.GCP_REGION || "us-central1";
+const GCP_PROJECT_RAW = requireEnv("GCP_PROJECT");
+const GCP_REGION_RAW = process.env.GCP_REGION || "us-central1";
+
+function assertGcpId(name: string, value: string): string {
+  // GCP project/region identifiers should be simple resource ID tokens.
+  if (!/^[a-z0-9-]+$/i.test(value)) {
+    throw new Error(`Invalid ${name}: must match /^[a-z0-9-]+$/i`);
+  }
+  return value;
+}
+
+const GCP_PROJECT = assertGcpId("GCP_PROJECT", GCP_PROJECT_RAW);
+const GCP_REGION = assertGcpId("GCP_REGION", GCP_REGION_RAW);
 
 // --- Helpers ---
 async function appwriteApi(path: string, method = "GET", body?: unknown) {
@@ -57,9 +68,12 @@ async function gcloudMetadata() {
   return data.access_token;
 }
 
-async function gcloudApi(path: string) {
+async function gcloudApi(pathSegments: string[]) {
   const token = await gcloudMetadata();
-  const res = await fetch(`https://run.googleapis.com/v2${path}`, {
+  const url = new URL("https://run.googleapis.com/v2/");
+  const encodedPath = pathSegments.map((s) => encodeURIComponent(s)).join("/");
+  url.pathname = `${url.pathname.replace(/\/$/, "")}/${encodedPath}`;
+  const res = await fetch(url.toString(), {
     headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
   });
   return res.json();
@@ -186,7 +200,7 @@ const gcloudListServices = tool(
   "List all Cloud Run services with status.",
   {},
   async () => {
-    const data = await gcloudApi(`/projects/${GCP_PROJECT}/locations/${GCP_REGION}/services`);
+    const data = await gcloudApi(["projects", GCP_PROJECT, "locations", GCP_REGION, "services"]);
     return { content: [{ type: "text" as const, text: JSON.stringify(data) }] };
   },
   { annotations: { readOnlyHint: true } }
