@@ -16,7 +16,7 @@ const PORT = parseInt(process.env.PORT || "8080");
 const APPWRITE_URL = requireEnv("APPWRITE_URL");
 const APPWRITE_KEY = requireEnv("APPWRITE_KEY");
 const APPWRITE_PROJECT = requireEnv("APPWRITE_PROJECT");
-const WINDMILL_URL = requireEnv("WINDMILL_URL");
+const WINDMILL_URL_RAW = requireEnv("WINDMILL_URL");
 const WINDMILL_TOKEN = requireEnv("WINDMILL_TOKEN");
 const GCP_PROJECT_RAW = requireEnv("GCP_PROJECT");
 const GCP_REGION_RAW = process.env.GCP_REGION || "us-central1";
@@ -31,6 +31,38 @@ function assertGcpId(name: string, value: string): string {
 
 const GCP_PROJECT = assertGcpId("GCP_PROJECT", GCP_PROJECT_RAW);
 const GCP_REGION = assertGcpId("GCP_REGION", GCP_REGION_RAW);
+
+function assertServiceBaseUrl(name: string, raw: string, allowedHosts: Set<string>): string {
+  let u: URL;
+  try {
+    u = new URL(raw);
+  } catch {
+    throw new Error(`Invalid ${name}: must be an absolute URL`);
+  }
+
+  if (u.protocol !== "https:") {
+    throw new Error(`Invalid ${name}: only https:// is allowed`);
+  }
+  if (u.username || u.password) {
+    throw new Error(`Invalid ${name}: credentials in URL are not allowed`);
+  }
+  if (u.search || u.hash) {
+    throw new Error(`Invalid ${name}: query/hash are not allowed`);
+  }
+  if (!allowedHosts.has(u.hostname.toLowerCase())) {
+    throw new Error(`Invalid ${name}: hostname is not in allowlist`);
+  }
+
+  return `${u.origin}${u.pathname.replace(/\/+$/, "")}`;
+}
+
+const WINDMILL_ALLOWED_HOSTS = new Set(
+  (process.env.WINDMILL_ALLOWED_HOSTS || new URL(WINDMILL_URL_RAW).hostname)
+    .split(",")
+    .map((h) => h.trim().toLowerCase())
+    .filter(Boolean)
+);
+const WINDMILL_URL = assertServiceBaseUrl("WINDMILL_URL", WINDMILL_URL_RAW, WINDMILL_ALLOWED_HOSTS);
 
 // --- Helpers ---
 async function appwriteApi(path: string, method = "GET", body?: unknown) {
@@ -52,7 +84,9 @@ async function appwriteExecFunction(functionId: string, body: unknown) {
 }
 
 async function windmillApi(path: string, method = "GET", body?: unknown) {
-  const res = await fetch(`${WINDMILL_URL}/api${path}`, {
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  const url = new URL(`/api${normalizedPath}`, WINDMILL_URL);
+  const res = await fetch(url.toString(), {
     method,
     headers: { "Authorization": `Bearer ${WINDMILL_TOKEN}`, "Content-Type": "application/json" },
     body: body ? JSON.stringify(body) : undefined,
