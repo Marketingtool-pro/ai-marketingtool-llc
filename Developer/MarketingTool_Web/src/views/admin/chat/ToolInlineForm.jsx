@@ -4,10 +4,17 @@ import { motion, AnimatePresence } from "motion/react";
 const sanitizeMediaUrl = (url) => {
   if (!url) return "";
   const str = String(url).trim();
-  if (str.toLowerCase().startsWith("javascript:")) {
+
+  try {
+    const parsed = new URL(str, window.location.origin);
+    const allowedProtocols = new Set(["blob:", "https:", "http:"]);
+    if (!allowedProtocols.has(parsed.protocol)) {
+      return "";
+    }
+    return parsed.href;
+  } catch {
     return "";
   }
-  return str;
 };
 
 // @mui
