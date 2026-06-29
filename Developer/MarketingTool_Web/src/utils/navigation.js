@@ -6,12 +6,20 @@ export function useRouter() {
   const params = useParams();
 
   const sanitizeUrl = (url) => {
-    if (!url) return '';
-    const trimmed = url.trim();
-    if (trimmed.toLowerCase().startsWith('javascript:')) {
+    if (!url) return 'about:blank';
+
+    try {
+      const parsed = new URL(String(url).trim(), window.location.origin);
+      const allowedProtocols = new Set(['http:', 'https:']);
+
+      if (!allowedProtocols.has(parsed.protocol)) {
+        return 'about:blank';
+      }
+
+      return parsed.toString();
+    } catch {
       return 'about:blank';
     }
-    return trimmed;
   };
 
   const push = (path) => {
