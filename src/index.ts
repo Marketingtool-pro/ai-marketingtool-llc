@@ -13,7 +13,7 @@ const PORT = parseInt(process.env.PORT || "8080");
 // Service URLs & Keys — all from env, NO fallbacks.
 // Supabase intentionally absent: per Zero-Trust, VPS 2 Supabase is NOT
 // reachable from Cloud Run. Any DB read/write must go via Windmill jobs.
-const APPWRITE_URL = requireEnv("APPWRITE_URL");
+const APPWRITE_URL_RAW = requireEnv("APPWRITE_URL");
 const APPWRITE_KEY = requireEnv("APPWRITE_KEY");
 const APPWRITE_PROJECT = requireEnv("APPWRITE_PROJECT");
 const WINDMILL_URL_RAW = requireEnv("WINDMILL_URL");
@@ -55,6 +55,14 @@ function assertServiceBaseUrl(name: string, raw: string, allowedHosts: Set<strin
 
   return `${u.origin}${u.pathname.replace(/\/+$/, "")}`;
 }
+
+const APPWRITE_ALLOWED_HOSTS = new Set(
+  (process.env.APPWRITE_ALLOWED_HOSTS || new URL(APPWRITE_URL_RAW).hostname)
+    .split(",")
+    .map((h) => h.trim().toLowerCase())
+    .filter(Boolean)
+);
+const APPWRITE_URL = assertServiceBaseUrl("APPWRITE_URL", APPWRITE_URL_RAW, APPWRITE_ALLOWED_HOSTS);
 
 const WINDMILL_ALLOWED_HOSTS = new Set(
   (process.env.WINDMILL_ALLOWED_HOSTS || new URL(WINDMILL_URL_RAW).hostname)
