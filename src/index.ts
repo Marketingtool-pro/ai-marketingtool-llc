@@ -79,6 +79,10 @@ async function appwriteApi(path: string, method = "GET", body?: unknown) {
     headers: { "X-Appwrite-Project": APPWRITE_PROJECT, "X-Appwrite-Key": APPWRITE_KEY, "Content-Type": "application/json" },
     body: body ? JSON.stringify(body) : undefined,
   });
+  if (!res.ok) {
+    const errorBody = await res.text().catch(() => "");
+    throw new Error(`Appwrite API request failed (${method} ${path}): ${res.status} ${res.statusText}${errorBody ? ` - ${errorBody}` : ""}`);
+  }
   return res.json();
 }
 
@@ -88,6 +92,10 @@ async function appwriteExecFunction(functionId: string, body: unknown) {
     headers: { "X-Appwrite-Project": APPWRITE_PROJECT, "X-Appwrite-Key": APPWRITE_KEY, "Content-Type": "application/json" },
     body: JSON.stringify({ body: JSON.stringify(body), async: false }),
   });
+  if (!res.ok) {
+    const errorBody = await res.text().catch(() => "");
+    throw new Error(`Appwrite function execution failed (POST /functions/${functionId}/executions): ${res.status} ${res.statusText}${errorBody ? ` - ${errorBody}` : ""}`);
+  }
   return res.json();
 }
 
@@ -99,6 +107,10 @@ async function windmillApi(path: string, method = "GET", body?: unknown) {
     headers: { "Authorization": `Bearer ${WINDMILL_TOKEN}`, "Content-Type": "application/json" },
     body: body ? JSON.stringify(body) : undefined,
   });
+  if (!res.ok) {
+    const errorBody = await res.text().catch(() => "");
+    throw new Error(`Windmill API request failed (${method} ${normalizedPath}): ${res.status} ${res.statusText}${errorBody ? ` - ${errorBody}` : ""}`);
+  }
   return res.json();
 }
 
