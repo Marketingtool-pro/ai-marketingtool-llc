@@ -1,0 +1,97 @@
+{
+  "name": "@marketingtool/developer",
+  "version": "1.0.2",
+  "description": "Awesome package",
+  "homepage": "https://github.com/Marketingtool-pro/ai-marketingtool-llc#readme",
+  "author": "Marketingtool-pro",
+  "files": [
+    "lib"
+  ],
+  "main": "foo.js",
+  "keywords": [],
+  "devDependencies": {
+    "@eslint/css": "^1.4.0",
+    "@eslint/js": "^10.0.1",
+    "@eslint/json": "^2.0.1",
+    "@eslint/markdown": "^8.0.3",
+    "coveralls": "^3.0.7",
+    "eslint": "^10.7.0",
+    "eslint-config-prettier": "^6.6.0",
+    "eslint-config-xo": "^0.27.2",
+    "eslint-plugin-prettier": "^3.1.1",
+    "eslint-plugin-vue": "^10.9.2",
+    "globals": "^17.7.0",
+    "husky": "^3.0.9",
+    "jest": "^26.1.0",
+    "lint-staged": "^9.4.3",
+    "prettier": "^1.19.1"
+  },
+  "engines": {
+    "npm": ">= 4.0.0",
+    "node": ">=10"
+  },
+  "directories": {
+    "doc": "docs",
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1 && jest",
+    "pretest": "eslint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Marketingtool-pro/ai-marketingtool-llc.git"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Marketingtool-pro/ai-marketingtool-llc/issues"
+  },
+  "dependencies": {
+    "@marketingtool/developer": "^1.0.1",
+    "npm": "^12.0.1",
+    "npm-package-arg": "^14.0.0",
+    "user": "^0.0.0"
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "git add"
+    ],
+    "*.json": [
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "eslintConfig": {
+    "extends": [
+      "xo",
+      "prettier"
+    ],
+    "env": {
+      "jest": true,
+      "node": true
+    },
+    "rules": {
+      "prettier/prettier": "error"
+    },
+    "plugins": [
+      "prettier"
+    ]
+  },
+  "jest": {
+    "testEnvironment": "node"
+  },
+  "bin": {
+    "mynewcommand": "cli.js"
+  },
+  "private": false,
+  "tap": {
+    "timeout": 60
+  }
+}
