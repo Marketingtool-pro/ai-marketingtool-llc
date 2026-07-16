@@ -1,8 +1,14 @@
 #!/usr/bin/env ruby
 # ==============================================================================
-# Ai marketingtool llc PROJECT SCANNER & AUTO-FIXER (v2.5)
-# Purpose: Scans real projects in ~/Developer, ensures .sh scripts are
+# Ai marketingtool llc PROJECT SCANNER & AUTO-FIXER (v2.6)
+# Purpose: Scans real projects across SCAN_ROOTS, ensures .sh scripts are
 # executable, and audits Firebase config.
+#
+# v2.6: multi-root scan — ~/Developer holds only ONE of the 5 real repos; the
+#       org repo (~/ai-marketingtool-llc) and the clones nested inside it were
+#       never scanned. Also fixed a fatal NameError in the chmod log lines
+#       ("AI MARKETINGTOOL LLC_ROOT", a botched rename of DEVELOPER_ROOT —
+#       parses as nested method calls, so ruby -c never caught it).
 #
 # v2.5: junk removal REMOVED — it duplicated setup_master.sh section 8
 #       (which already deletes .DS_Store / crash dumps before this runs), so
@@ -28,6 +34,16 @@ require 'find'
 require 'shellwords'
 
 DEVELOPER_ROOT = File.expand_path("~/Developer")
+
+# v2.6: the 5 real repos no longer all live under ~/Developer — the org repo
+# (~/ai-marketingtool-llc) and the clones nested INSIDE it (Phone App,
+# Marketingtool-pro_web-app-router-) were invisible to the scan, so
+# "1 projects scanned" looked fake when it was really an incomplete root list.
+# Scan every root; a root that is itself an owned repo counts as a project.
+SCAN_ROOTS = [
+  DEVELOPER_ROOT,
+  File.expand_path("~/ai-marketingtool-llc"),
+].freeze
 
 # A directory counts as one of OUR projects only if it's a git repo whose
 # `origin` remote belongs to the org/user below. This is what stops the scan
@@ -66,7 +82,7 @@ UPSTREAM_DIRS = %w[
 # Nested directory NAMES to PRUNE during recursive walks (any depth).
 # Never descend into these — they are huge, generated, or irrelevant.
 PRUNE_DIRS = %w[
-  node_modules .git .ipynb_checkpoints chromium Pods
+  node_modules .git .claude .ipynb_checkpoints chromium Pods
   build dist target out .next .nuxt .output .gradle
   .venv venv vendor DerivedData .terraform __pycache__
   .cache .expo .dart_tool .svelte-kit coverage
@@ -149,12 +165,6 @@ def audit_firebase(path)
 end
 
 def scan_projects
-  unless Dir.exist?(DEVELOPER_ROOT)
-    log("Developer directory not found at #{DEVELOPER_ROOT}", :error)
-    return
-  end
-
-  log("Scanning real projects in #{DEVELOPER_ROOT}...")
   scanned = 0
   skipped = 0
 
@@ -176,14 +186,35 @@ def scan_projects
     "mt-deploy"                         => "Deploy Repo (config only)"
   }
 
-  Dir.foreach(DEVELOPER_ROOT) do |entry|
-    next if entry == '.' || entry == '..'
-    next if SKIP_DIRS.include?(entry)
-    next if entry.start_with?('.') # skip any hidden dir
-    next if entry.include?('.backup-') # skip backup folders
+  SCAN_ROOTS.each do |root|
+    unless Dir.exist?(root)
+      log("Scan root not found: #{root}", :error)
+      next
+    end
+    log("Scanning real projects in #{root}...")
 
-    project_path = File.join(DEVELOPER_ROOT, entry)
-    next unless File.directory?(project_path)
+    # The root itself can be one of our repos (~/ai-marketingtool-llc). Audit
+    # it SHALLOWLY — no chmod sweep, no deep walk: that checkout is full of
+    # unrelated vendored trees (devtools-frontend, actions-runner, ...) that a
+    # recursive chmod would wrongly touch and take minutes to crawl. Nested
+    # owned clones inside it get the full treatment via the entry loop below.
+    if owned_repo?(root)
+      root_name = File.basename(root)
+      log("Project: #{root_name} [#{labels[root_name] || 'Marketingtool-pro repo'}] (scan root — shallow audit)")
+      if File.exist?(File.join(root, "firebase.json"))
+        log("Firebase detected: firebase.json", :audit)
+      end
+      scanned += 1
+    end
+
+    Dir.foreach(root) do |entry|
+      next if entry == '.' || entry == '..'
+      next if SKIP_DIRS.include?(entry)
+      next if entry.start_with?('.') # skip any hidden dir
+      next if entry.include?('.backup-') # skip backup folders
+
+      project_path = File.join(root, entry)
+      next unless File.directory?(project_path)
 
     # Only OUR projects: in the labels allowlist, or a git repo with our remote.
     # Everything else (upstream clones, unrelated scratch dirs) is skipped and
@@ -215,6 +246,7 @@ def scan_projects
     end
 
     scanned += 1
+    end
   end
 
   log("Done — #{scanned} projects scanned (#{skipped} non-org dirs skipped).")
