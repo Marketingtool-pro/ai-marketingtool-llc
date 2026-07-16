@@ -493,6 +493,9 @@ rm -rf "$HOME/Library/Application Support/com.apple.wallpaper/aerials" 2>/dev/nu
 
 # Regenerable JS package-manager caches.
 rm -rf "$HOME/.bun/install/cache" 2>/dev/null || true
+# mise keeps every downloaded tool tarball forever — 8.3 GB found 2026-07-17.
+# Pure cache: mise re-downloads on demand. Installs are NOT touched.
+rm -rf "$HOME/.local/share/mise/downloads" 2>/dev/null || true
 command -v yarn &>/dev/null && yarn cache clean &>/dev/null || true
 command -v pnpm &>/dev/null && pnpm store prune  &>/dev/null || true
 
