@@ -3312,7 +3312,6 @@ function AutomationResults({ response }) {
 
 function InsightResults({ response }) {
   const d = response?.data || {};
-  const meta = response?.meta || {};
   const accent = "#06b6d4";
   const statusColor =
     d.healthStatus === "Critical"
