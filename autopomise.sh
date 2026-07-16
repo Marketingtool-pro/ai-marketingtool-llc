@@ -11,6 +11,11 @@
 set -uo pipefail
 
 DEV_ROOT="${DEV_ROOT:-/Users/loken/Developer}"
+# Multi-root (2026-07-17): ~/Developer is nearly empty now and setup_master
+# already sweeps it, so single-root runs reported "0.00 GB" and looked fake.
+# The org checkout is where the junk actually accumulates (632 .DS_Store and
+# 11 Finder-duplicate dirs found on the first multi-root scan).
+LLC_ROOT="${LLC_ROOT:-/Users/loken/ai-marketingtool-llc}"
 PHONE_REPO="$DEV_ROOT/AiMarketingtool-pro-fbaf2fad"
 
 APPLY=0; DEEP=0
@@ -41,25 +46,55 @@ act() {
   fi
 }
 
-echo "── Autopomise — $DEV_ROOT ──"
+ROOTS=()
+[ -d "$DEV_ROOT" ] && ROOTS+=("$DEV_ROOT")
+[ -d "$LLC_ROOT" ] && ROOTS+=("$LLC_ROOT")
+echo "── Autopomise — ${ROOTS[*]:-none} ──"
 if [ "$APPLY" -eq 1 ]; then echo "MODE: APPLY (deleting)"; else echo "MODE: DRY-RUN (preview only — pass --apply to delete)"; fi
-[ -d "$DEV_ROOT" ] || { echo "❌ $DEV_ROOT not found"; exit 1; }
+[ "${#ROOTS[@]}" -gt 0 ] || { echo "❌ no scan roots found ($DEV_ROOT, $LLC_ROOT)"; exit 1; }
 
-# 1. Duplicate / junk directories at the Developer root (dynamic match).
+# 1. Duplicate / junk directories at each root (dynamic match).
 echo "[1/5] Duplicate & junk directories…"
-while IFS= read -r -d '' d; do
-  act "$d" "duplicate/junk dir"
-done < <(find "$DEV_ROOT" -maxdepth 1 -type d \( -name "* copy" -o -name "*copy" -o -name "New Folder*" -o -name "untitled folder*" \) -print0 2>/dev/null)
+for root in "${ROOTS[@]}"; do
+  while IFS= read -r -d '' d; do
+    act "$d" "duplicate/junk dir"
+  done < <(find "$root" -maxdepth 1 -type d \( -name "* copy" -o -name "*copy" -o -name "New Folder*" -o -name "untitled folder*" \) -print0 2>/dev/null)
+  # Finder "name 2"-style duplicates: REPORT ONLY, never auto-delete — some
+  # are real working dirs (e.g. "ImplementingAStore... 2" is a live git repo
+  # with an org remote). Human reviews, human deletes.
+  while IFS= read -r -d '' d; do
+    case "$(basename "$d")" in
+      *" copy"|*copy|"New Folder"*|"untitled folder"*) continue ;; # handled above
+    esac
+    if [ -d "$d/.git" ]; then
+      echo "  ⚠ Finder-duplicate NAME but it's a git repo — review manually, NOT auto-deletable: $d ($(human "$d"))"
+    else
+      echo "  ⚠ possible Finder duplicate — review manually (not auto-deleted): $d ($(human "$d"))"
+    fi
+  done < <(find "$root" -maxdepth 1 -type d -name "* [0-9]" -print0 2>/dev/null)
+done
 
-# 2. OS junk files everywhere (always safe to remove).
+# 2. OS junk files everywhere (always safe to remove). .git/.claude/node_modules
+# are excluded ( -not -path, NOT -prune: -delete implies -depth, which silently
+# disables -prune on both GNU and BSD find).
 echo "[2/5] OS junk files (.DS_Store, Thumbs.db, __MACOSX)…"
-junk_n=$(find "$DEV_ROOT" -type f \( -name .DS_Store -o -name Thumbs.db \) 2>/dev/null | wc -l | tr -d ' ')
-# __MACOSX dirs were deleted on --apply but never counted/previewed — dry-run
-# under-reported what apply would actually remove.
-macosx_n=$(find "$DEV_ROOT" -type d -name __MACOSX 2>/dev/null | wc -l | tr -d ' ')
+junk_n=0; macosx_n=0
+for root in "${ROOTS[@]}"; do
+  _jn=$(find "$root" -type f \( -name .DS_Store -o -name Thumbs.db \) -not -path "*/.git/*" -not -path "*/.claude/*" -not -path "*/node_modules/*" 2>/dev/null | wc -l | tr -d ' ')
+  # __MACOSX dirs were deleted on --apply but never counted/previewed — dry-run
+  # under-reported what apply would actually remove.
+  _mn=$(find "$root" -type d -name __MACOSX -not -path "*/.git/*" -not -path "*/.claude/*" 2>/dev/null | wc -l | tr -d ' ')
+  junk_n=$((junk_n + _jn)); macosx_n=$((macosx_n + _mn))
+  # tally junk-file sizes — the summary used to claim "0.00 GB" while section 2
+  # listed hundreds of removable files (only act() items were counted).
+  _jkb=$(find "$root" -type f \( -name .DS_Store -o -name Thumbs.db \) -not -path "*/.git/*" -not -path "*/.claude/*" -not -path "*/node_modules/*" -exec du -sk {} + 2>/dev/null | awk '{s+=$1} END{print s+0}')
+  freed_kb=$((freed_kb + ${_jkb:-0}))
+  if [ "$APPLY" -eq 1 ]; then
+    find "$root" -type f \( -name .DS_Store -o -name Thumbs.db \) -not -path "*/.git/*" -not -path "*/.claude/*" -not -path "*/node_modules/*" -delete 2>/dev/null
+    find "$root" -type d -name __MACOSX -not -path "*/.git/*" -not -path "*/.claude/*" -exec rm -rf {} + 2>/dev/null
+  fi
+done
 if [ "$APPLY" -eq 1 ]; then
-  find "$DEV_ROOT" -type f \( -name .DS_Store -o -name Thumbs.db \) -delete 2>/dev/null
-  find "$DEV_ROOT" -type d -name __MACOSX -exec rm -rf {} + 2>/dev/null
   echo "  ✅ removed $junk_n OS junk files + $macosx_n __MACOSX dirs"
 else
   echo "  • would remove $junk_n OS junk files + $macosx_n __MACOSX dirs"
@@ -94,6 +129,8 @@ fi
 #    QUARANTINE (mv to /tmp), never delete — same policy as setup_master.sh.
 #    Only exact-name matches at the top level; legit workspace files
 #    (Gemfile, mise.toml, .mcp.json, scripts, myports.txt, ...) are untouched.
+# DEV_ROOT ONLY — the LLC checkout legitimately owns package.json/go.mod/etc.
+# (it IS a project); quarantining those there would break the real repo.
 echo "[5/5] Stray scaffold junk at Developer root…"
 SCAFFOLD_JUNK=(
   package.json package-lock.json node_modules yarn.lock pnpm-lock.yaml
@@ -118,13 +155,13 @@ for j in "${SCAFFOLD_JUNK[@]}"; do
 done
 [ "$_qn" -eq 0 ] && echo "  • none found"
 
-# Summary.
-freed_gb=$(awk "BEGIN{printf \"%.2f\", ${freed_kb:-0}/1048576}")
+# Summary — MB below 0.1 GB so small-but-real wins don't print as "0.00 GB".
+freed_h=$(awk "BEGIN{kb=${freed_kb:-0}; if (kb>=104858) printf \"%.2f GB\", kb/1048576; else printf \"%.1f MB\", kb/1024}")
 echo "──────────────────────────────────────────────"
 if [ "$APPLY" -eq 1 ]; then
-  echo "✅ Freed ~${freed_gb} GB"
+  echo "✅ Freed ~${freed_h}"
 else
-  echo "ℹ️  ~${freed_gb} GB reclaimable — re-run with --apply to delete the items above."
+  echo "ℹ️  ~${freed_h} reclaimable — re-run with --apply to delete the items above."
 fi
 
 # Runner status (report only — never auto-modifies CI).
