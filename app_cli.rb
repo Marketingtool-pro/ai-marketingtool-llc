@@ -1,4 +1,11 @@
 #!/usr/bin/env ruby
+# ==============================================================================
+# UNUSED sample tool (GitHub device-flow login) — kept for reference only.
+# NOTE: GitHub's device flow ALWAYS signs in a PERSONAL user account (whichever
+# user the browser is logged in as) — there is no such thing as "logging in as
+# an org"; org access comes from that user's membership. All real org tooling
+# on this machine authenticates via `gh` (keyring), NOT this script.
+# ==============================================================================
 
 require "net/http"
 require "json"
