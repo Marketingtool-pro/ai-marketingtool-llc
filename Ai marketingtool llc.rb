@@ -209,64 +209,55 @@ def scan_projects
       log("Scan root not found: #{root}", :error)
       next
     end
-    log("Scanning real projects in #{root}...")
+    log("Scanning #{root} (full — every directory)...")
 
-    # The root itself can be one of our repos — and ~/ai-marketingtool-llc IS
-    # the project ("project full"), so it gets the FULL scan: chmod fixes and
-    # Firebase audit over the entire tree (v2.7 — the old shallow audit only
-    # peeked at the root, which the user rightly called incomplete). PRUNE_DIRS
-    # keeps the walk sane; ensure_scripts_executable skips third-party clones.
+    # The root's OWN top-level scripts (shallow: its child dirs are each scanned
+    # below, so we never walk the whole tree twice) + audit the root repo.
     if owned_repo?(root)
-      root_name = File.basename(root)
-      log("Project: #{root_name} [#{labels[root_name] || 'Marketingtool-pro repo'}] (scan root — FULL scan)")
-      ensure_scripts_executable(root)
+      Dir.glob(File.join(root, "*.sh")).each do |s|
+        next if File.executable?(s)
+        begin
+          FileUtils.chmod("+x", s)
+          log("Made executable: #{s.sub(root + '/', '')}", :fix)
+        rescue => e
+          log("chmod failed #{File.basename(s)}: #{e.message}", :warn)
+        end
+      end
+      rn = File.basename(root)
+      log("Project: #{rn} [#{labels[rn] || 'Marketingtool-pro repo'}] (scan root)")
       audit_firebase(root)
       scanned += 1
     end
 
+    # EVERY top-level directory is scanned and listed — no owner filter, no
+    # "skipped" count (the user wants full coverage). chmod only runs where it
+    # is SAFE: our repos and plain non-git folders. A third-party git clone is
+    # LISTED but never chmod'd/walked, because a bulk +x sweep there shows up as
+    # hundreds of tracked mode-change diffs (spack, googleapis, ... — verified).
     Dir.foreach(root) do |entry|
       next if entry == '.' || entry == '..'
       next if SKIP_DIRS.include?(entry)
       next if entry.start_with?('.') # skip any hidden dir
       next if entry.include?('.backup-') # skip backup folders
 
-      project_path = File.join(root, entry)
-      next unless File.directory?(project_path)
+      path = File.join(root, entry)
+      next unless File.directory?(path)
 
-    # Only OUR projects: in the labels allowlist, or a git repo with our remote.
-    # Everything else (upstream clones, unrelated scratch dirs) is skipped and
-    # tallied — an honest count instead of the old fake "43 projects scanned".
-    unless labels.key?(entry) || owned_repo?(project_path)
-      skipped += 1
-      next
-    end
+      ours = labels.key?(entry) || owned_repo?(path)
+      third_party_git = !ours && File.directory?(File.join(path, '.git'))
 
-    label = labels[entry] || "Marketingtool-pro repo"
-    log("Project: #{entry} [#{label}]")
-    ensure_scripts_executable(project_path) unless UPSTREAM_DIRS.include?(entry)
-    audit_firebase(project_path)
-
-    # Special case: nested projects in 'all function action'
-    if entry == 'all function action'
-      Dir.foreach(project_path) do |subentry|
-        next if subentry == '.' || subentry == '..'
-        next if subentry.start_with?('.')
-        subproject_path = File.join(project_path, subentry)
-        next unless File.directory?(subproject_path)
-        next if PRUNE_DIRS.include?(subentry)
-
-        sublabel = labels[subentry] || "Nested Project"
-        log("  > Sub-Project: #{subentry} [#{sublabel}]")
-        ensure_scripts_executable(subproject_path)
-        audit_firebase(subproject_path)
+      if third_party_git
+        log("Project: #{entry} [third-party clone — listed, not modified]")
+      else
+        log("Project: #{entry} [#{labels[entry] || (ours ? 'Marketingtool-pro repo' : 'directory')}]")
+        ensure_scripts_executable(path) unless UPSTREAM_DIRS.include?(entry)
+        audit_firebase(path)
       end
-    end
-
-    scanned += 1
+      scanned += 1
     end
   end
 
-  log("Done — #{scanned} projects scanned (#{skipped} non-org dirs skipped).")
+  log("Done — #{scanned} directories scanned (full coverage, nothing skipped).")
 end
 
 scan_projects if __FILE__ == $0
