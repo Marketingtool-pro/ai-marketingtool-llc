@@ -1,6 +1,6 @@
 {
   "name": "@marketingtool/developer",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Awesome package",
   "homepage": "https://github.com/Marketingtool-pro/ai-marketingtool-llc#readme",
   "author": "Marketingtool-pro",
@@ -25,7 +25,8 @@
     "jest": "^26.1.0",
     "lint-staged": "^9.4.3",
     "node-addon-api": "^8.9.0",
-    "prettier": "^1.19.1"
+    "prettier": "^1.19.1",
+    "tree-sitter": "^0.25.0"
   },
   "engines": {
     "npm": ">= 4.0.0",
@@ -91,11 +92,15 @@
   "bin": {
     "mynewcommand": "cli.js"
   },
-  "private": false,
   "tap": {
     "timeout": 60
   },
   "allowScripts": {
-    "husky@3.1.0": true
+    "husky@3.1.0": true,
+    "fsevents@2.3.3": true,
+    "tree-sitter@0.25.0": true
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
   }
 }
