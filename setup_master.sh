@@ -1,6 +1,16 @@
 #!/bin/zsh
 # ==============================================================================
-# MASTER SETUP & MAINTENANCE (v2.6)
+# MASTER SETUP & MAINTENANCE (v2.7)
+# v2.7: killed the daily "gh token missing read:packages" nag — replaced the
+#       x-oauth-scopes header check with a FUNCTIONAL npm-whoami check after
+#       the token write (fine-grained org tokens have no classic scopes AND
+#       npm.pkg.github.com only accepts classic tokens, so the old check
+#       could never clear). Fixed ~/.npmrc token write (grep matched the
+#       @scope:registry line → token line was NEVER written). Clasp key path
+#       → ~/.secrets vault (Developer/credentials_backup is gone); no warn
+#       when the bypass is already active. Scanner path → repo copy fallback.
+#       Guarded 4 more set-e landmines (gh token/user, mise reshim,
+#       firebase login:list, npm whoami).
 # v2.6: removed container-runtime section (podman + docker) — not used here;
 #       dropped their VERSIONS lines. Junk removal now lives ONLY in section 8
 #       (shell); Developer.rb audits, it no longer re-deletes the same files
@@ -152,21 +162,27 @@ info "Refreshing GitHub Packages tokens..."
 _GH_TOKEN=$(gh auth token 2>/dev/null) || _GH_TOKEN=""
 _GH_USER=$(gh api user --jq '.login' 2>/dev/null) || _GH_USER=""
 if [[ -n "$_GH_TOKEN" && -n "$_GH_USER" ]]; then
-  # Verify token has packages scopes
-  _GH_SCOPES=$(curl -sI -H "Authorization: token $_GH_TOKEN" https://api.github.com/user 2>/dev/null | grep -i "x-oauth-scopes:" | tr -d '\r')
-  # write:packages IMPLIES read:packages, and GitHub's x-oauth-scopes header
-  # then lists ONLY write:packages — so match either or the warning never clears.
-  if ! echo "$_GH_SCOPES" | grep -qE "(read|write):packages"; then
-    # The gh keyring OAuth token simply lacks the packages scopes. No
-    # GITHUB_TOKEN/GITHUB_PERSONAL_ACCESS_TOKEN is exported anywhere (verified
-    # 2026-07-15), so nothing needs unsetting — this is a genuinely interactive,
-    # ONE-TIME browser/device authorization. Once done it persists in the
-    # keyring and this warning never fires again.
-    warn "gh token missing read:packages,write:packages — run ONCE (interactive): gh auth refresh -s read:packages,write:packages -h github.com"
-  fi
+  # v2.7: the old x-oauth-scopes header check here nagged on EVERY run and
+  # could never clear for two reasons found 2026-07-16:
+  #   1. Fine-grained org tokens (github_pat_*) have NO classic scopes and
+  #      return an EMPTY x-oauth-scopes header — but npm.pkg.github.com only
+  #      accepts CLASSIC tokens anyway (GitHub docs: "GitHub Packages only
+  #      supports authentication using a personal access token (classic)"),
+  #      so a fine-grained token can never fix this. The keyring token itself
+  #      must carry the scopes: ONE-TIME interactive fix →
+  #      gh auth refresh -s read:packages,write:packages -h github.com
+  #   2. The token was never actually written to ~/.npmrc (see grep fix below),
+  #      so even a good token wouldn't have cleared the section-10 check.
+  # The scope nag now lives at the END of this section as a FUNCTIONAL check
+  # (npm whoami against the Packages registry) — it warns only when Packages
+  # auth truly fails, and goes quiet the moment it works.
 
   # ── npm ── ~/.npmrc
-  if grep -q "npm.pkg.github.com" ~/.npmrc 2>/dev/null; then
+  # Match the TOKEN line specifically: plain `grep npm.pkg.github.com` also
+  # matched the `@marketingtool:registry=https://npm.pkg.github.com` line, so
+  # the sed branch ran, matched nothing, and NO token was ever written —
+  # npm fell back to a stale globalconfig token → daily 403s (found 2026-07-16).
+  if grep -q "^//npm.pkg.github.com/:_authToken=" ~/.npmrc 2>/dev/null; then
     sed -i '' "s|//npm.pkg.github.com/:_authToken=.*|//npm.pkg.github.com/:_authToken=${_GH_TOKEN}|" ~/.npmrc
   else
     cat >> ~/.npmrc <<NPMEOF
@@ -242,7 +258,13 @@ MAVENEOF
     fi
   fi
 
-  ok "GitHub Packages tokens refreshed (npm + Ruby + Gradle + Maven + NuGet) — user: $_GH_USER"
+  # FUNCTIONAL packages check (replaces the header scope check — see top of
+  # section). Runs AFTER the ~/.npmrc write so it tests the refreshed token.
+  if npm whoami --registry https://npm.pkg.github.com &>/dev/null; then
+    ok "GitHub Packages tokens refreshed (npm + Ruby + Gradle + Maven + NuGet) — user: $_GH_USER"
+  else
+    warn "GitHub Packages npm auth FAILING (403) — keyring token lacks packages scopes; ONE-TIME fix: gh auth refresh -s read:packages,write:packages -h github.com (note: fine-grained org tokens can NOT auth npm Packages — classic scopes required)"
+  fi
 else
   warn "gh token/user unavailable — GitHub Packages tokens not refreshed"
 fi
@@ -334,13 +356,20 @@ fi
 
 # ── 6b. CLASP ─────────────────────────────────────
 info "Clasp auth bypass..."
-_CLASP_KEY="$HOME/Developer/credentials_backup/marketing-tool-484720-40a8b411afcf.json"
+# v2.7: ~/Developer/credentials_backup is GONE (verified 2026-07-16) — the
+# vault is ~/.secrets/credentials_backup. Try the vault first, legacy second,
+# and if the key file is missing but the bypass is ALREADY configured in
+# ~/.clasprc.json, that's fine — don't warn about a key we don't need.
+_CLASP_KEY="$HOME/.secrets/credentials_backup/marketing-tool-484720-40a8b411afcf.json"
+[[ -f "$_CLASP_KEY" ]] || _CLASP_KEY="$HOME/Developer/credentials_backup/marketing-tool-484720-40a8b411afcf.json"
 if [[ -f "$_CLASP_KEY" ]]; then
   if ~/.local/bin/id-clasp-bypass "id-clasp-bypas@marketing-tool-484720.iam.gserviceaccount.com" "$_CLASP_KEY" &>/dev/null; then
     ok "Clasp bypass configured (using service account)"
   else
     warn "Clasp bypass configuration failed (invalid key or revoked SA)"
   fi
+elif [[ -f ~/.clasprc.json ]] && grep -q "isServiceAccount" ~/.clasprc.json; then
+  ok "Clasp bypass already active (~/.clasprc.json) — key file not needed"
 else
   warn "Clasp key not found: $_CLASP_KEY"
 fi
