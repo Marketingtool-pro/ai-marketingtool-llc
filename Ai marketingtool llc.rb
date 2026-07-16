@@ -80,7 +80,14 @@ SKIP_DIRS = %w[
 UPSTREAM_DIRS = %w[
   podman macports-ports macports-webapp macports-guide autoconf alerter
   podman-desktop-demo MacPorts-2.12.5
+  spack spack-packages local-path-provisioner googleapis swagger-codegen
+  choosealicense.com macports-base crc devtools-frontend ext-apps
+  toolbox skaffold sbt openshift-install-mac openshift-client-mac
 ].freeze
+# Second batch added 2026-07-17 after the v2.7 FULL root scan chmodded scripts
+# inside spack-packages (upstream clones at the llc root — remotes verified:
+# spack/spack-packages.git, rancher/local-path-provisioner, ...). Mode diffs
+# were reverted; keep these pruned from the chmod sweep forever.
 
 # Nested directory NAMES to PRUNE during recursive walks (any depth).
 # Never descend into these — they are huge, generated, or irrelevant.
@@ -143,6 +150,10 @@ end
 def ensure_scripts_executable(path)
   each_file_pruned(path) do |script|
     next unless script.end_with?('.sh')
+    # Never chmod inside third-party clones nested ANYWHERE under the walk —
+    # the bulk +x sweep shows up as hundreds of tracked mode-change diffs
+    # (same disease UPSTREAM_DIRS documents at the entry level).
+    next if script.split(File::SEPARATOR).any? { |seg| UPSTREAM_DIRS.include?(seg) }
     unless File.executable?(script)
       begin
         FileUtils.chmod("+x", script)
@@ -200,17 +211,16 @@ def scan_projects
     end
     log("Scanning real projects in #{root}...")
 
-    # The root itself can be one of our repos (~/ai-marketingtool-llc). Audit
-    # it SHALLOWLY — no chmod sweep, no deep walk: that checkout is full of
-    # unrelated vendored trees (devtools-frontend, actions-runner, ...) that a
-    # recursive chmod would wrongly touch and take minutes to crawl. Nested
-    # owned clones inside it get the full treatment via the entry loop below.
+    # The root itself can be one of our repos — and ~/ai-marketingtool-llc IS
+    # the project ("project full"), so it gets the FULL scan: chmod fixes and
+    # Firebase audit over the entire tree (v2.7 — the old shallow audit only
+    # peeked at the root, which the user rightly called incomplete). PRUNE_DIRS
+    # keeps the walk sane; ensure_scripts_executable skips third-party clones.
     if owned_repo?(root)
       root_name = File.basename(root)
-      log("Project: #{root_name} [#{labels[root_name] || 'Marketingtool-pro repo'}] (scan root — shallow audit)")
-      if File.exist?(File.join(root, "firebase.json"))
-        log("Firebase detected: firebase.json", :audit)
-      end
+      log("Project: #{root_name} [#{labels[root_name] || 'Marketingtool-pro repo'}] (scan root — FULL scan)")
+      ensure_scripts_executable(root)
+      audit_firebase(root)
       scanned += 1
     end
 
