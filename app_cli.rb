@@ -117,7 +117,31 @@ def poll_for_token(device_code, interval)
   end
 end
 
+# Resolve a token WITHOUT the browser device flow, org-side first:
+#   1. $GH_TOKEN / $GITHUB_TOKEN env
+#   2. the gh CLI keyring token (`gh auth token`) — this is the org-side login
+#   3. the saved ~/.app_cli_token file (device-flow fallback)
+# Returns nil if none found.
+def resolve_token
+  env = ENV["GH_TOKEN"] || ENV["GITHUB_TOKEN"]
+  return env.strip unless env.nil? || env.strip.empty?
+  gh = `gh auth token 2>/dev/null`.strip
+  return gh unless gh.empty?
+  File.read(TOKEN_PATH).strip rescue nil
+end
+
 def login
+  # Prefer the gh CLI token (org-side, no browser). Only fall back to the
+  # device flow if gh isn't logged in.
+  gh = `gh auth token 2>/dev/null`.strip
+  unless gh.empty?
+    File.write(TOKEN_PATH, gh, perm: 0o600)
+    FileUtils.chmod(0o600, TOKEN_PATH)
+    puts "Authenticated via gh CLI (org-side, no browser). Token saved."
+    return
+  end
+
+  warn "gh CLI not logged in — falling back to browser device flow."
   verification_uri, user_code, device_code, interval = request_device_code.values_at("verification_uri", "user_code", "device_code", "interval")
 
   puts "Please visit: #{verification_uri}"
@@ -131,9 +155,8 @@ end
 def whoami
   uri = URI("https://api.github.com/user")
 
-  begin
-    token = File.read(TOKEN_PATH).strip
-  rescue Errno::ENOENT
+  token = resolve_token
+  if token.nil? || token.empty?
     puts "You are not authorized. Run the `login` command."
     exit 1
   end
