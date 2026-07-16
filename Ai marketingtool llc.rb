@@ -64,7 +64,10 @@ SKIP_DIRS = %w[
   CoreSimulator CommandLineTools CoreDevice DeveloperDiskImages
   PrivateFrameworks DeviceKit credentials_backup
   vendor MacPorts-2.12.5 DockerDesktop
+  tmp
 ].freeze
+# tmp added 2026-07-17: a scratch dir named "tmp" is not a project even when
+# it happens to contain a git repo with an org remote.
 # vendor/ added 2026-07-09: MacPorts build vendor dir at Developer root holds
 # ROOT-OWNED tcl files — chmod there always fails with "Operation not permitted".
 # It's build output + bundler gems, not a project. Same for MacPorts-2.12.5
@@ -160,7 +163,11 @@ def audit_firebase(path)
   if found.any?
     log("Firebase detected: #{found.join(', ')}", :audit)
   else
-    log("No Firebase config found (Check if intentional)", :warn) if path.downcase.include?("phone") || path.downcase.include?("llc")
+    # Match the project's NAME, not the full path: under the ~/ai-marketingtool-llc
+    # scan root EVERY path contains "llc", which made this warn about Firebase
+    # for docs repos, Apple samples, tmp, ... (wrong suggestion, found 2026-07-17).
+    name = File.basename(path).downcase
+    log("No Firebase config found (Check if intentional)", :warn) if name.include?("phone") || name.include?("llc")
   end
 end
 
