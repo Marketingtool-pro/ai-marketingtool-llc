@@ -99,6 +99,18 @@ for _cfg in ~/Developer/mise.toml ~/mise.toml ~/.config/mise/config.toml; do
     sed -i '' '/^NODE_ENV = "production"/d' "$_cfg"
     warn "Removed global NODE_ENV=production (kills devDependency installs) from $_cfg"
   fi
+  # A mise [deps] block with `auto = true` auto-runs bun/yarn/pnpm/bundler
+  # install on EVERY mise activation and prints to STDOUT — which pollutes every
+  # command substitution. Found 2026-07-17: it poisoned the `_RUBY_VER=$(mise
+  # exec ... ruby -e 'print RUBY_VERSION')` capture below, writing pages of
+  # "[deps.bun] bun install..." garbage into ~/.ruby-version, which then made
+  # mise error on EVERY subsequent command (self-perpetuating). It also leaked
+  # the gh token in plaintext (pnpm fetching the old @marketingtool/developer).
+  # Disable it wherever it reappears.
+  if [[ -f "$_cfg" ]] && grep -q 'auto = true' "$_cfg"; then
+    sed -i '' 's/auto = true/auto = false/g' "$_cfg"
+    warn "Disabled mise [deps] auto=true (stdout spam poisons captures) in $_cfg"
+  fi
 done
 # ~/.profile exported DOCKER_CONFIG=~/newdir/.docker (dir doesn't exist),
 # breaking Docker in any sh-family shell. Removed 2026-07-09; sweep regressions.
@@ -290,6 +302,11 @@ if command -v mise &>/dev/null; then
   # CocoaPods pin. Probe the ACTUAL 3.3 install instead; never trust cwd.
   _RUBY_VER="$(mise exec "ruby@${_RUBY_PIN}" -- ruby -e 'print RUBY_VERSION' 2>/dev/null || echo "$_RUBY_VER")"
 fi
+# SANITIZE before writing: keep ONLY a bare X.Y.Z on the last line. Even with
+# the [deps] auto=true sweep above, ANY future stdout leak into this capture
+# must never corrupt ~/.ruby-version again (that broke every command 2026-07-17).
+_RUBY_VER="$(printf '%s\n' "$_RUBY_VER" | grep -oE '^[0-9]+\.[0-9]+(\.[0-9]+)?$' | tail -1)"
+[[ -z "$_RUBY_VER" ]] && _RUBY_VER="3.3.11"   # fallback if capture was empty/garbage
 echo "$_RUBY_VER" > ~/.ruby-version          # mise reads .ruby-version natively
 ok "Ruby pinned → $_RUBY_VER (mise)"
 
