@@ -1,8 +1,15 @@
 #!/usr/bin/env ruby
 # ==============================================================================
-# Ai marketingtool llc PROJECT SCANNER & AUTO-FIXER (v2.6)
-# Purpose: Scans real projects across SCAN_ROOTS, ensures .sh scripts are
-# executable, and audits Firebase config.
+# Ai marketingtool llc PROJECT SCANNER & AUTO-FIXER (v2.8)
+# Purpose: FULL scan of the project folder(s) — lists every directory (no
+# "skipped" filter), removes regenerable junk, makes .sh executable, audits
+# Firebase.
+#
+# v2.8: user wants the project folder fully scanned with junk zeroed. Every
+# top-level dir is now listed (no owner-filter/"88 skipped"); regenerable junk
+# (.DS_Store, crash dumps, debug logs) is DELETED across the whole tree; chmod
+# still runs only where safe (our repos + plain folders, never inside a
+# third-party git clone — that created 189 dirty mode-diffs before).
 #
 # v2.6: multi-root scan — ~/Developer holds only ONE of the 5 real repos; the
 #       org repo (~/ai-marketingtool-llc) and the clones nested inside it were
@@ -106,6 +113,14 @@ PRUNE_PATH_SUBSTRINGS = %w[
   /.pub-cache /.cocoapods/repos
 ].freeze
 
+# Regenerable JUNK removed on every scan (v2.8 — user wants junk zeroed in the
+# project folder). Exact-name matches + glob-matched crash dumps / debug logs.
+# All of these are OS cruft or tool output that regenerates on demand — never
+# source. Deleting them is safe even inside git repos (they're untracked).
+JUNK_FILES = %w[.DS_Store Thumbs.db .DS_Store? ._.DS_Store desktop.ini].freeze
+JUNK_GLOBS = %w[*.hprof hs_err_pid*.log replay_pid*.log npm-debug.log*
+                yarn-error.log ._* .Trashes].freeze
+
 def log(message, type = :info)
   prefix = { info: "🔵 [INFO]", fix: "✅ [FIXED]", warn: "⚠️  [WARN]", error: "❌ [ERROR]", audit: "🔍 [AUDIT]" }
   puts "#{prefix[type]} #{message}"
@@ -147,6 +162,26 @@ def owned_repo?(path)
   !url.empty? && !(url =~ OWNER_PATTERN).nil?
 end
 
+# Delete regenerable junk under `path`. Returns [files_removed, bytes_freed].
+# Only touches JUNK_FILES / JUNK_GLOBS matches — never source.
+def clean_junk(path)
+  n = 0; bytes = 0
+  each_file_pruned(path) do |f|
+    base = File.basename(f)
+    junk = JUNK_FILES.include?(base) || JUNK_GLOBS.any? { |g| File.fnmatch?(g, base) }
+    next unless junk && File.file?(f)
+    begin
+      bytes += File.size(f)
+      FileUtils.rm(f)
+      n += 1
+    rescue => e
+      log("Failed to remove junk #{base}: #{e.message}", :warn)
+    end
+  end
+  log("Removed #{n} junk files (#{'%.1f' % (bytes / 1024.0)} KB) from #{File.basename(path)}", :fix) if n > 0
+  [n, bytes]
+end
+
 def ensure_scripts_executable(path)
   each_file_pruned(path) do |script|
     next unless script.end_with?('.sh')
@@ -184,7 +219,8 @@ end
 
 def scan_projects
   scanned = 0
-  skipped = 0
+  total_junk = 0
+  total_bytes = 0
 
   # Mapping for better logging
   # Keys = repo names verified via `gh api orgs/Marketingtool-pro/repos`
@@ -213,7 +249,8 @@ def scan_projects
 
     # The root's OWN top-level scripts (shallow: its child dirs are each scanned
     # below, so we never walk the whole tree twice) + audit the root repo.
-    if owned_repo?(root)
+    root_owned = owned_repo?(root)
+    if root_owned
       Dir.glob(File.join(root, "*.sh")).each do |s|
         next if File.executable?(s)
         begin
@@ -224,7 +261,12 @@ def scan_projects
         end
       end
       rn = File.basename(root)
-      log("Project: #{rn} [#{labels[rn] || 'Marketingtool-pro repo'}] (scan root)")
+      log("Project: #{rn} [#{labels[rn] || 'Marketingtool-pro repo'}] (scan root — full clean)")
+      # Junk removal over the WHOLE root tree (this is the project folder the
+      # user wants zeroed). Runs once here; child dirs below skip re-cleaning
+      # our own tree, and third-party clones are cleaned via their own entry.
+      jn, jb = clean_junk(root)
+      total_junk += jn; total_bytes += jb
       audit_firebase(root)
       scanned += 1
     end
@@ -253,11 +295,18 @@ def scan_projects
         ensure_scripts_executable(path) unless UPSTREAM_DIRS.include?(entry)
         audit_firebase(path)
       end
+      # Junk removal for children only when the root itself was NOT full-cleaned
+      # above (i.e. ~/Developer) — for the owned project root, clean_junk(root)
+      # already swept the entire tree including these children.
+      unless root_owned
+        jn, jb = clean_junk(path)
+        total_junk += jn; total_bytes += jb
+      end
       scanned += 1
     end
   end
 
-  log("Done — #{scanned} directories scanned (full coverage, nothing skipped).")
+  log("Done — #{scanned} dirs scanned (full coverage), #{total_junk} junk files removed (#{'%.1f' % (total_bytes / 1024.0)} KB).")
 end
 
 scan_projects if __FILE__ == $0
