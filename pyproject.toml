@@ -1,0 +1,15 @@
+[project]
+name = "ai-marketingtool-llc"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "marketingtool-pro",email = "Help@marketingtool.pro"},
+]
+dependencies = []
+requires-python = "==3.14.*"
+readme = "README.md"
+license = {text = "MIT"}
+
+
+[tool.pdm]
+distribution = false

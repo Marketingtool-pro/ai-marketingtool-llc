@@ -9,3 +9,11 @@ dist/
 # Temp workspace and download headers
 .claude/worktrees/
 FETCH_HEAD
+
+# Runtime versions and archive assets
+.pdm-python
+.python-version
+*.tar.gz
+*.tar.gz.sig
+*.asc
+*.pem
