@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import MainCard from "components/MainCard";
 
 const sanitizeMediaUrl = (url) => {
   if (!url) return "";
