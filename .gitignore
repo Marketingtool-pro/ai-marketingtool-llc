@@ -5,3 +5,7 @@ dist/
 .env.*
 *.log
 .DS_Store
+
+# Temp workspace and download headers
+.claude/worktrees/
+FETCH_HEAD
