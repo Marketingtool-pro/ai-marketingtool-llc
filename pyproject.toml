@@ -1,15 +1,85 @@
+[build-system]
+requires = ["setuptools>=61.0", "cx_Freeze"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "ai-marketingtool-llc"
 version = "0.1.0"
-description = "Default template for PDM package"
-authors = [
-    {name = "marketingtool-pro",email = "Help@marketingtool.pro"},
-]
-dependencies = []
-requires-python = "==3.14.*"
+description = "Unified workspace environment for market optimization engines."
 readme = "README.md"
-license = {text = "MIT"}
+requires-python = ">=3.12.0"
+license = { file = "LICENSE" }
+keywords = ["benchmark", "development", "marketing"]
+authors = [
+    { name = "Workspace Contributor", email = "help@marketingtool.prp" }
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13"
+]
 
+[project.optional-dependencies]
+dev = [
+    "flake8",
+    "ruff",
+    "pytest",
+    "pre-commit>=3.3.3"
+]
 
-[tool.pdm]
-distribution = false
+[project.scripts]
+gyp = "gyp:script_main"
+
+[tool.setuptools]
+zip-safe = false
+package-dir = { "" = "bindings/python", "gyp" = "pylib/gyp" }
+
+[tool.setuptools.packages.find]
+where = ["bindings/python", "pylib"]
+
+[tool.mypy]
+check_untyped_defs = true
+disallow_incomplete_defs = true
+pretty = true
+python_version = "3.11"
+strict_optional = false
+warn_unreachable = true
+
+[[tool.mypy.overrides]]
+module = ["yaml"]
+ignore_missing_imports = true
+
+[tool.ruff]
+src = ["bindings/python", "pylib"]
+line-length = 88
+target-version = "py311"
+extend-exclude = ["pylib/packaging"]
+
+[tool.ruff.lint]
+select = [
+    "ASYNC", "B", "C4", "C90", "E", "F", "I", "PERF", "PIE", 
+    "PT018", "RUF", "SIM", "UP", "W", "DTZ", "G", "ICN", "INT", 
+    "PL", "PYI", "RSE", "T10", "TCH", "TID", "YTT"
+]
+ignore = [
+    "E721", "PLC1901", "PLR0402", "PLR1714", "PLR2004", 
+    "PLR5501", "PLW0603", "PLW2901", "PYI024", "RUF005", 
+    "RUF012", "UP031"
+]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+
+[tool.ruff.lint.mccabe]
+max-complexity = 101
+
+[tool.ruff.lint.pylint]
+max-args = 11
+max-branches = 108
+max-returns = 10
+max-statements = 286
+

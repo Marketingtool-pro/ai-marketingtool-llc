@@ -1,6 +1,39 @@
+name: Publish to PyPI
+
 on:
   push:
-    branches:
-      - master
-      - Master
+    tags:
+      - 'v*'  # Triggers when you push a version tag like v0.16.1
+
+jobs:
+  pypi-publish:
+    name: Build and publish Python distro to PyPI
+    runs-on: ubuntu-latest
+    
+    # Crucial permission block for PyPI OIDC Trusted Publishing
+    permissions:
+      id-token: write  # Mandated to fetch the OIDC token
+      contents: read
+
+    steps:
+    - name: Checkout Source Code
+      uses: actions/checkout@v4
+
+    - name: Set up Python Runtime
+      uses: actions/setup-python@v5
+      with:
+        python-state: '3.11'
+
+    - name: Install uv and Build Tooling
+      run: |
+        curl -LsSf https://astral.sh | sh
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+        uv pip install build
+
+    - name: Build Package Artifacts
+      run: |
+        python -m build
+
+    - name: Upload Distro to PyPI
+      uses: pypa/github-action-pypi-publish@release/v1
 
