@@ -1,0 +1,72 @@
+# Publishes the Python distribution `ai-marketingtool-llc`.
+#
+# Uses PyPI Trusted Publishing (OIDC) -- there is no API token to store. The
+# publisher must be registered once on the target index before this can succeed:
+#   https://test.pypi.org/manage/account/publishing/
+# with: owner=Marketingtool-pro, repo=ai-marketingtool-llc,
+#       workflow=publish-pypi.yml, environment=testpypi
+#
+# Third-party actions are pinned to full commit SHAs to satisfy the org Actions
+# policy. They must also be allow-listed at the org level, since none are owned
+# by Marketingtool-pro.
+name: Publish Python distribution
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish to TestPyPI (unchecked = build and verify only)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and verify distributions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+        with:
+          python-version: "3.12"
+          enable-cache: true
+
+      - name: Run tests
+        run: uv run --group dev pytest -q
+
+      - name: Build sdist and wheel
+        run: uv build
+
+      - name: Verify distribution metadata
+        run: uvx twine check dist/*
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-dists
+          path: dist/
+          if-no-files-found: error
+
+  publish-testpypi:
+    name: Publish to TestPyPI
+    needs: build
+    # Only on a published release, or an explicit opt-in dispatch. Never on a
+    # bare build run.
+    if: github.event_name == 'release' || inputs.publish
+    runs-on: ubuntu-latest
+    environment: testpypi
+    permissions:
+      id-token: write # required for Trusted Publishing
+    steps:
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          name: release-dists
+          path: dist/
+
+      - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+        with:
+          repository-url: https://test.pypi.org/legacy/
