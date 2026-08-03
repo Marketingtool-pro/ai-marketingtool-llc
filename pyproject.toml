@@ -1,0 +1,48 @@
+[project]
+name = "ai-marketingtool-llc"
+version = "0.1.0"
+description = "Control-plane helpers for the Marketingtool-pro project."
+readme = "README-pypi.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "Marketingtool-pro", email = "help@marketingtool.pro" },
+]
+keywords = ["marketingtool", "control-plane", "automation"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Typing :: Typed",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/Marketingtool-pro/ai-marketingtool-llc"
+Repository = "https://github.com/Marketingtool-pro/ai-marketingtool-llc"
+Issues = "https://github.com/Marketingtool-pro/ai-marketingtool-llc/issues"
+
+[dependency-groups]
+dev = [
+    "pre-commit>=3.3.3",
+    "pytest>=8",
+]
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+# The npm package (@marketingtool-pro/ai-marketingtool-llc) ships "src", so the
+# Python module deliberately lives outside src/ to keep the two packaging
+# systems from shipping each other's files. See package.json "files".
+[tool.pdm.build]
+includes = ["ai_marketingtool_llc"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

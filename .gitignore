@@ -5,3 +5,18 @@ dist/
 .env.*
 *.log
 .DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+__pypackages__/
+.pdm-build/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# uv.lock is wanted for reproducible CI, but a global ignore rule (*.lock)
+# would otherwise hide it.
+!uv.lock
