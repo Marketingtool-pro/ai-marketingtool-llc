@@ -227,35 +227,3 @@ jobs:
           fi
           echo "Web deploy run: $RUN_ID"
           gh run watch "$RUN_ID" --repo "$REPO" --exit-status
-
-  publish-control-package:
-    if: ${{ inputs.publish_control_package }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - name: Trigger and watch control package publish
-        env:
-          GH_TOKEN: ${{ github.token }}
-          REPO: ${{ github.repository }}
-          WORKFLOW: publish-package.yml
-          REF: ${{ github.ref_name }}
-        run: |
-          set -euo pipefail
-          DISPATCHED_AT="$(date -u +%s)"
-          gh workflow run "$WORKFLOW" --repo "$REPO" --ref "$REF"
-          RUN_ID=""
-          for _ in $(seq 1 18); do
-            RUN_ID="$(gh api "repos/$REPO/actions/workflows/$WORKFLOW/runs?per_page=20" --jq ".workflow_runs[] | select(.event==\"workflow_dispatch\" and (.created_at | fromdateiso8601) >= $DISPATCHED_AT) | .id" | head -n 1)"
-            if [ -n "${RUN_ID:-}" ]; then
-              break
-            fi
-            sleep 5
-          done
-          if [ -z "${RUN_ID:-}" ]; then
-            echo "::error::Could not find the dispatched control package publish run."
-            exit 1
-          fi
-          echo "Control package run: $RUN_ID"
-          gh run watch "$RUN_ID" --repo "$REPO" --exit-status

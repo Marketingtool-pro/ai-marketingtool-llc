@@ -1,5 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import MainCard from "components/MainCard";
 
 const sanitizeMediaUrl = (url) => {
   if (!url) return "";
@@ -2645,7 +2646,7 @@ function AutomationResults({ response }) {
                   }}
                 >
                   <RichText content={platform.content} accentColor={accent} />
-                  {platform.imageUrl && !platform.videoUrl && (
+                  {sanitizeMediaUrl(platform.imageUrl) && !sanitizeMediaUrl(platform.videoUrl) && (
                     <Box
                       sx={{
                         mt: 2,
@@ -2655,13 +2656,13 @@ function AutomationResults({ response }) {
                       }}
                     >
                       <img
-                        src={platform.imageUrl}
+                        src={sanitizeMediaUrl(platform.imageUrl)}
                         alt="Post preview"
                         style={{ width: "100%", height: "auto", display: "block" }}
                       />
                     </Box>
                   )}
-                  {platform.videoUrl && (
+                  {sanitizeMediaUrl(platform.videoUrl) && (
                     <Box
                       sx={{
                         mt: 2,
@@ -2676,9 +2677,9 @@ function AutomationResults({ response }) {
                       }}
                     >
                       <video
-                        src={platform.videoUrl}
+                        src={sanitizeMediaUrl(platform.videoUrl)}
                         controls
-                        poster={platform.imageUrl}
+                        poster={sanitizeMediaUrl(platform.imageUrl)}
                         style={{ width: "100%", height: "100%", objectFit: "contain" }}
                       />
                     </Box>
