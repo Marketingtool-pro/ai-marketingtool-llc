@@ -1,38 +1,22 @@
-# System & Env Folders
-.agents/
-.config/
-Developer/
-vendor/
-vendor_src/
-my-codeql-db/
-bin/
-public/
+node_modules/
+dist/
+.env
+.env.local
+.env.*
+*.log
+.DS_Store
 
-# Binary & Package Archives
-*.deb
-*.rpm
-*.zip
-*.tar.gz
-*.tgz
-*.pkg
-*.msi
-*.sig
-*.SHA256SUM
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+__pypackages__/
+.pdm-build/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
 
-# Cross-language artifacts
-App.java
-pom.xml
-build.sbt,
-MODULE.bazel
-Gem
-gems/
-rake-13.4.2/
-graph-2.11.1/
-spec/
-irb
-
-# Miscellaneous Logs/Reports
-*.sarif
-.bazel_fix_commands.json
-skills-lock.json
-artifact-fetched
+# uv.lock is wanted for reproducible CI, but a global ignore rule (*.lock)
+# would otherwise hide it.
+!uv.lock

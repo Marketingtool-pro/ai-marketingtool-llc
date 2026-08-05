@@ -1,0 +1,150 @@
+oci = {}
+monorepo_root = true
+
+[tools]
+go = "latest"
+golangci-lint = "latest"
+lefthook = "latest"
+"aqua:mvdan/gofumpt" = "latest"
+"go:://github.com" = "1.5.1"
+"go:golang.org/x/vuln/cmd/govulncheck" = "latest"
+python = "3.13"
+uv = "latest"
+pdm = "latest"
+"pipx:pipenv" = "latest"
+node = "24.18.1"
+npm = "latest"
+pnpm = "latest"
+yarn = "latest"
+bun = "latest"
+"npm:@antfu/ni" = "latest"
+"npm:prettier" = "latest"
+rust = "latest"
+"cargo:starship" = "latest"
+ruby = "latest"
+bundler = "latest"
+dotnet = "latest"
+copilot-cli = "latest"
+copilot = "latest"
+claude = "latest"
+vp = "latest"
+viteplus = "latest"
+firebase = "latest"
+atmos = "latest"
+podman = "latest"
+flatc = "latest"
+oxlint = "latest"
+make = "latest"
+maestro = "latest"
+pack = "latest"
+apm = "latest"
+scarb = "latest"
+aqua = "latest"
+adr-tools = "latest"
+dependency-check = "latest"
+shellspec = "latest"
+oh-my-posh = "latest"
+rclone = "latest"
+tree-sitter = "latest"
+kube-linter = "latest"
+devspace = "latest"
+atuin = "latest"
+azd = "latest"
+atlas = "latest"
+sd = "latest"
+act = "latest"
+action-validator = "latest"
+antigravity-cli = "latest"
+azure-cli = "latest"
+buildpack = "latest"
+bazel = "latest"
+hub = "latest"
+mkcert = "latest"
+jwt = "latest"
+regsync = "latest"
+pre-commit = "latest"
+hk = "latest"
+xcodes = "latest"
+cmake = "latest"
+swiftformat = "latest"
+fastfetch = "latest"
+google-java-format = "latest"
+jfrog-cli = "latest"
+json5 = "latest"
+jc = "latest"
+tssh = "latest"
+scala-cli = "latest"
+cowsay = "latest"
+pinact = "latest"
+orval = "latest"
+nub = "latest"
+maturin = "latest"
+ansible = "latest"
+apko = "latest"
+kiota = "latest"
+acli = "latest"
+ruff = "latest"
+terraform = "latest"
+aube = "latest"
+ant = "latest"
+assh = "latest"
+longbridge-terminal = "latest"
+starknet-foundry-sncast = "latest"
+bitwarden-secrets-manager = "latest"
+localstack = "latest"
+editorconfig-checker = "latest"
+mitmproxy = "latest"
+"aqua:aws/aws-cli" = "latest"
+"aqua:trivy" = "latest"
+"aqua:gruntwork-io/fetch" = "latest"
+"pkgx:stedolan.github.io/jq" = "latest"
+oc = { version = "latest", bin = "oc", checksum_url = "https://openshift.com{{ version }}/sha256sum.txt", platforms = "{ linux-arm64 = { url = https://openshift.com{{ version }}/openshift-client-mac-arm64-{{ version }}.tar.gz } }" }
+openshift-install = { version = "latest", bin = "openshift-install", checksum_url = "https://openshift.com{{ version }}/sha256sum.txt" }
+azure = { version = "latest", uvx_args = "--prerelease=allow" }
+
+[tasks]
+format = { description = "Format Go files with gofumpt", run = "gofumpt -w ." }
+build = { description = "Build a local bk binary into dist/", run = 'VERSION="$(git describe --tags --dirty --always 2>/dev/null || echo DEV)"; mkdir -p dist && go build -ldflags "-X ://github.com" -o dist/bk .' }
+install = { description = "Install the local bk binary into the active Go bin directory", depends = "[build]", run = 'BIN_DIR="$(go env GOBIN)"; if [ -z "$BIN_DIR" ]; then BIN_DIR="$(go env GOPATH)/bin"; fi; mkdir -p "$BIN_DIR"; install -m 0755 dist/bk "$BIN_DIR/bk"' }
+"install:global" = { description = "Install the local bk binary into ~/bin", depends = "[build]", run = 'mkdir -p "$HOME/bin"; install -m 0755 dist/bk "$HOME/bin/bk"' }
+lint = { description = "Run golangci-lint with the repository configuration", run = "golangci-lint run --verbose --timeout 3m" }
+test = { description = "Run the Go test suite", run = "go test ./..." }
+vulncheck = { description = "Run govulncheck against all packages", run = "govulncheck ./..." }
+generate = { description = "Regenerate the GraphQL client code", run = "go generate ./cmd/generate" }
+hooks = { description = "Install the repository git hooks", run = "lefthook install" }
+ci = { description = "Run the main local CI checks", depends = "[lint, test, vulncheck]" }
+
+[deps]
+uv = { auto = true }
+pnpm = { auto = false }
+bundler = { auto = true }
+npm = { auto = true }
+go = { auto = true }
+bun = { auto = true }
+composer = { auto = true }
+bazel = { auto = false }
+rust = { auto = true }
+node = { auto = true }
+aube = { auto = true }
+
+[settings]
+experimental = true
+lockfile = true
+activate_aggressive = true
+all_compile = false
+always_keep_install = true
+auto_install = true
+auto_env = true
+always_keep_download = true
+slsa = true
+exec_auto_install = true
+terminal_progress = true
+log_level = "error"
+not_found_auto_install = true
+github = { slsa = false }
+aqua = { github_attestations = false, slsa = false }
+cargo = {}
+dotfiles = {}
+dotnet = {}
+forgejo = {}
+

@@ -1,85 +1,60 @@
-[build-system]
-requires = ["setuptools>=61.0", "cx_Freeze"]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "ai-marketingtool-llc"
 version = "0.1.0"
-description = "Unified workspace environment for market optimization engines."
+description = "Control-plane helpers for the Marketingtool-pro project."
 readme = "README.md"
-requires-python = ">=3.12.0"
-license = { file = "LICENSE" }
-keywords = ["benchmark", "development", "marketing"]
+requires-python = ">=3.12"
+license = { text = "MIT" }
 authors = [
-    { name = "Workspace Contributor", email = "help@marketingtool.prp" }
+    {name = "Marketingtool-pro",email = "help@marketingtool.pro"},
 ]
+keywords = ["marketingtool", "control-plane", "automation"]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: Apache Software License",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13"
+    "Programming Language :: Python :: 3.13",
+    "Typing :: Typed",
 ]
+dependencies = ["uv>=0.12.1"]
 
-[project.optional-dependencies]
+[project.urls]
+Homepage = "https://github.com/Marketingtool-pro/ai-marketingtool-llc"
+Repository = "https://github.com/Marketingtool-pro/ai-marketingtool-llc"
+Issues = "https://github.com/Marketingtool-pro/ai-marketingtool-llc/issues"
+
+[dependency-groups]
 dev = [
-    "flake8",
-    "ruff",
-    "pytest",
-    "pre-commit>=3.3.3"
+    "pre-commit>=3.3.3",
+    "pytest>=8",
+    "pytest-dotenv>=0.5.2",
 ]
 
-[project.scripts]
-gyp = "gyp:script_main"
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
 
-[tool.setuptools]
-zip-safe = false
-package-dir = { "" = "bindings/python", "gyp" = "pylib/gyp" }
+[tool.pdm]
+distribution = true
 
-[tool.setuptools.packages.find]
-where = ["bindings/python", "pylib"]
+# Update this exact section in your pyproject.toml:
+[tool.pdm.build]
+package-dir = "src"
+uv = true
+includes = ["src/ai_marketingtool_llc"]
 
-[tool.mypy]
-check_untyped_defs = true
-disallow_incomplete_defs = true
-pretty = true
-python_version = "3.11"
-strict_optional = false
-warn_unreachable = true
 
-[[tool.mypy.overrides]]
-module = ["yaml"]
-ignore_missing_imports = true
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+[tool.tox]
+env_list = ["py312"]
 
-[tool.ruff]
-src = ["bindings/python", "pylib"]
-line-length = 88
-target-version = "py311"
-extend-exclude = ["pylib/packaging"]
-
-[tool.ruff.lint]
-select = [
-    "ASYNC", "B", "C4", "C90", "E", "F", "I", "PERF", "PIE", 
-    "PT018", "RUF", "SIM", "UP", "W", "DTZ", "G", "ICN", "INT", 
-    "PL", "PYI", "RSE", "T10", "TCH", "TID", "YTT"
-]
-ignore = [
-    "E721", "PLC1901", "PLR0402", "PLR1714", "PLR2004", 
-    "PLR5501", "PLW0603", "PLW2901", "PYI024", "RUF005", 
-    "RUF012", "UP031"
-]
-
-[tool.ruff.lint.isort]
-combine-as-imports = true
-
-[tool.ruff.lint.mccabe]
-max-complexity = 101
-
-[tool.ruff.lint.pylint]
-max-args = 11
-max-branches = 108
-max-returns = 10
-max-statements = 286
-
+[tool.tox.env_run_base]
+pass_env = ["MY_AUTH_TOKEN"]
+deps = ["pytest", "pytest-dotenv", "requests"]
+commands = [["pytest"]]
