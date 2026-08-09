@@ -57,7 +57,7 @@
     "react-hook-form": "^7.71.2",
     "react-intl": "^10.0.0",
     "react-otp-input": "^3.1.1",
-    "react-router-dom": "^7.13.1",
+    "react-router-dom": "^7.18.2",
     "simplebar-react": "^3.3.2",
     "stylis-plugin-rtl": "^2.1.1",
     "swr": "^2.4.1",
