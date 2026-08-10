@@ -29,9 +29,11 @@ jobs:
     name: Build and verify distributions
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      # actions/checkout@v4.2.2
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 
 
-      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+      # astral-sh/setup-uv@v5.3.1 (Latest stable v5 recommended)
+      - uses: astral-sh/setup-uv@f724c812fe50e021c35b5a2bf85473778a48ef2e 
         with:
           python-version: "3.12"
           enable-cache: true
@@ -45,7 +47,8 @@ jobs:
       - name: Verify distribution metadata
         run: uvx twine check dist/*
 
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      # actions/upload-artifact@v4.6.1
+      - uses: actions/upload-artifact@4cedc83d681fc9996c33b4998315b045e768f519 
         with:
           name: release-dists
           path: dist/
@@ -62,11 +65,13 @@ jobs:
     permissions:
       id-token: write # required for Trusted Publishing
     steps:
-      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+      # actions/download-artifact@v4.1.9 (Note: Must match upload-artifact major version v4!)
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 
         with:
           name: release-dists
           path: dist/
 
-      - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+      # pypa/gh-action-pypi-publish@v1.12.4
+      - uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc 
         with:
           repository-url: https://test.pypi.org/legacy/
