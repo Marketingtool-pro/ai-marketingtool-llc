@@ -38,8 +38,46 @@ every page, and malformed (`+1-8775934465`, missing dashes):
 | `/`, `/shop/`, `/shop/sing-register/`, `/about-us/`, `/faqs/`, `/cart/`, `/checkout/` | 3× each | 0 |
 | `/contact-us/` | 5× | 0 |
 
-Identical counts site-wide ⇒ it is set once in a theme/global option (the
-`hw-nav-call` widget), not per page, so a single edit fixes every page.
+Identical counts site-wide ⇒ it is rendered from stored settings, not per page.
+
+### Exactly where it lives (from the 2026-08-11 Jetpack backup, prefix `fqsi_`)
+
+`find_tfn_db.py` locates it; `fix_tfn_sql.py` replaces it. **31 occurrences**:
+
+| Table | Hits | Location |
+|---|---|---|
+| `fqsi_options` | 1 | option **`cnb`** (Call Now Button) — **serialized PHP**, `s:6:"number";s:12:"+18775934465"` |
+| `fqsi_postmeta` | 10 | Visual Header **`call_textarea`** (stored URL-encoded *and* double-URL-encoded), an Elementor icon-box, an Elementor list item, a "US Support" pill |
+| `fqsi_posts` | 20 | `contact-us`, `return-policy`, the terms page, page `300553`, plus revisions |
+
+Also present in the `cnb` option: a **third number `+1-954-336-4969`**, which may
+or may not be wanted.
+
+### Why the replacement is digits-only
+
+`fix_tfn_sql.py` swaps only the 10 digits `8775934465` → `8555357753`. That is
+byte-for-byte length preserving, which matters because the `cnb` value is
+serialized PHP with a length prefix: rewriting it to the formatted
+`+1-855-535-7753` would make a 12-byte string 15 bytes and silently corrupt the
+option — the classic way search-and-replace white-screens a WordPress site.
+
+Verified on the extracted dump: 31 replacements, byte length unchanged in all
+three tables, zero residual wrong digits, and the serialized option still
+validates (`declared len=12 actual len=12 value=+18555357753 → OK`).
+
+Consequence: the stored value becomes `+1-8555357753`. Adding the display dashes
+(`+1-855-535-7753`) changes string length and so must be done through the
+WordPress UI on the few visible spots — note the site's number is *already*
+malformed today (`+1-8775934465`), so formatting is pre-existing, not new.
+
+### Blocked from changing it live
+
+The browser session on `antiviruspointorgdomainonly.wpcomstaging.com` is signed
+in as a **customer-level user ("Lokendra")** — `/wp-admin/` redirects to
+My Account and `edit.php?post_type=visualheader` returns "Sorry, you are not
+allowed to access this page." WordPress.com SSO does not override an existing
+local WP session, and MCP access is disabled for this site, so the change needs
+either an admin login or the migration path below.
 
 Not phone numbers, despite matching a phone-shaped regex: `-8034482512`,
 `-8613342216`, `-8808679026`, `-8854671477`, `18604651163`. These are the
