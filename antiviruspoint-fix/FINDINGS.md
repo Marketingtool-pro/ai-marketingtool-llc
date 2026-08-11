@@ -1,90 +1,176 @@
-# antiviruspoint.org — diagnosis, 2026-08-12
+# antiviruspoint.org — findings, 2026-08-12
 
-## Environment (measured, not assumed)
+## The root problem: the paid plan and the domain are on different sites
 
-| Fact | Value |
-|---|---|
-| Host | **WordPress.com** (Automattic) — `192.0.78.173`, `host-header: WordPress.com`, `a8c-cdn` |
-| DNS | Hostinger `ns1/ns2.dns-parking.com` (parking only — does **not** host the site) |
-| Theme | `filson` (child/custom, `hw-*` class prefix) |
-| Stack | WooCommerce + Elementor + Easy Digital Downloads 3.6.9.1 + Jetpack Site Kit |
+| | `antiviruspoint.org` | `antiviruspointorgdomainonly.wpcomstaging.com` |
+|---|---|---|
+| Blog ID | **248244777** | **245503557** |
+| Created | 2025-09-10 | 2025-06-13 (older = original) |
+| WordPress.com label | **"Staging"** | "Incoming Migration — Migration started" |
+| Paid plan | none — only a **Domain Connection** (₹0, renews 2030) | **Premium** (exp. 2027-07-17) + Jetpack Search + **Jetpack Boost (expires in 23 days)** |
+| MCP access | available | **disabled** (`site_level_disabled`) |
+| Renders correctly | ❌ | ✅ |
+| Who sees it | **all customers** | nobody |
 
-Note: the Hostinger MCP credentials in this environment return `Unauthenticated` and are
-irrelevant to this site — it is not a Hostinger property.
+So customers are being served a **drifted staging copy**, while the money is
+spent on a site nobody visits. Everything below follows from that: the staging
+copy had ShopEngine, Easy Digital Downloads and the Performance Lab suite piled
+onto it, which is what produced the duplicate cards, the wrong footer and the
+9–10 s uncached page loads.
 
-## Confirmed bug: every product card renders its image and price twice
+Confirmed drift (live vs. the correct site):
 
-One root cause produces both symptoms. The Filson theme builds its own card markup
-(`.hw-thumb`, `.hw-price`) **and** fires WooCommerce's default loop hooks inside that same
-card without unhooking the core callbacks. So WooCommerce prints a second copy of each.
+| | live `.org` | correct site |
+|---|---|---|
+| ShopEngine references | **29** | **0** |
+| `data-od-xpath` (Optimization Detective) | **346** | **0** |
+| Page size / load | 907–973 KB / 9–10 s | 585 KB / 0.8 s |
 
-The price, straight from the live HTML:
+## Toll-free number
 
-```html
-<div class="hw-price">99.99$ 24.95$</div>                              <!-- theme -->
-<span class="price"><div class="hw-price">99.99$ 24.95$</div></span>   <!-- woocommerce_template_loop_price -->
-```
+**Correct number, confirmed by the owner: `+1-855-535-7753`.**
 
-The `<span class="price">` wrapper is the signature of WooCommerce's `loop/price.php`,
-which proves the second copy is the core hook rather than the theme.
+Live `.org` already has it. The correct-content site has the **wrong** number on
+every page, and malformed (`+1-8775934465`, missing dashes):
 
-The duplicate `<img>` sits inside `.hw-details` directly after the `<span class="onsale">`
-badge — exactly the output order of `woocommerce_before_shop_loop_item_title`, where the
-sale flash and the thumbnail are both attached at priority 10, flash first.
+| Page | wrong `+1-877-593-4465` | correct number |
+|---|---|---|
+| `/`, `/shop/`, `/shop/sing-register/`, `/about-us/`, `/faqs/`, `/cart/`, `/checkout/` | 3× each | 0 |
+| `/contact-us/` | 5× | 0 |
 
-### Measured scope (noscript fallbacks excluded, so these are *visible* elements)
+Identical counts site-wide ⇒ it is set once in a theme/global option (the
+`hw-nav-call` widget), not per page, so a single edit fixes every page.
 
-| Page | Cards | `hw-price` per card | Visible `<img>` per card |
-|---|---|---|---|
-| `/` (homepage) | 60 | **2** on 60/60 | **2** on 59/60 |
-| `/shop/` | 15 | **2** on 15/15 | **2** on 15/15 |
-| `/product-category/androids/` | 15 | **2** on 15/15 | **2** on 15/15 |
+Not phone numbers, despite matching a phone-shaped regex: `-8034482512`,
+`-8613342216`, `-8808679026`, `-8854671477`, `18604651163`. These are the
+theme's random `hw-nav-<digits>` element IDs.
 
-100% of product cards are affected, site-wide.
+## Fixes applied and verified live
 
-## The fix
+1. **Purple bar removed.** It was WooCommerce's *demo-store* Store Notice. The
+   Customizer checkbox was already off, so what visitors saw came from **stale
+   cache**. Purged LiteSpeed; verified on a fresh fetch — zero notice elements,
+   no `woocommerce-demo-store` body class.
 
-`antiviruspoint-fix-duplicate-card-output.php` removes the two core callbacks:
+2. **Google Ads tag installed** (`AW-17518714922`). Activated WPCode Lite (was
+   installed but inactive) and added the snippet to the Header field. The
+   existing **LinkedIn Insight Tag** in the footer field was left untouched
+   (756 bytes, unchanged). Verified live; LiteSpeed base64-minifies inline JS, so
+   it had to be decoded to confirm:
+   `gtag('js',new Date());gtag('config','AW-17518714922')`
 
-```php
-remove_action( 'woocommerce_before_shop_loop_item_title', 'woocommerce_template_loop_product_thumbnail', 10 );
-remove_action( 'woocommerce_after_shop_loop_item_title',  'woocommerce_template_loop_price',             10 );
-```
+3. **Duplicate product-card image and price removed.** Appended to Customizer →
+   Additional CSS, preserving all 1355 original characters. Verified present in
+   the LiteSpeed combined stylesheet:
+   ```css
+   .hw-post-product .hw-details>img{display:none!important}
+   .hw-post-product .hw-details>span.price{display:none!important}
+   ```
 
-Why this is safe:
+### Why CSS instead of the PHP plugin in this directory
 
-- **Cannot affect product detail pages.** Both hooks are loop-only; single products use
-  `woocommerce_before_single_product_summary` / `woocommerce_single_product_summary`.
-- **Cannot blank a card.** The theme's own markup is emitted *first* in every card, so
-  removing the core duplicate leaves the intended design intact.
-- **Fixes related/up-sell/cross-sell blocks too**, since they reuse `content-product.php`.
-- **Reversible** — deactivate the plugin and the old behaviour returns.
-- The `onsale` badge is deliberately left attached; it renders once and is intended.
+The PHP plugin here is the cleaner fix — it stops the duplicate markup being
+generated at all, rather than hiding it. It could not be installed because:
 
-Preferred as a plugin rather than a theme edit so it survives theme updates.
+- `wpcom-mcp` `plugin.install` accepts **only WordPress.org slugs**, not a custom zip.
+- WPCode Lite on this site exposes **only** the Header/Footer page — no snippet
+  manager — so it cannot run PHP.
 
-### Not yet verified
-The fix is lint-clean (`php -l`) and the hook names are WooCommerce core API, but it has
-**not been executed against a running WordPress instance** — there is no local WP install
-and no authenticated access to the live site. It needs one load of `/shop/` after
-activation to confirm one image and one price per card.
+Keep the plugin for the Hostinger migration, where a zip can simply be uploaded.
+
+The duplicate came from the Filson theme rendering its own card markup
+(`.hw-thumb` / `.hw-price`) **and** firing WooCommerce's default loop hooks
+inside `.hw-details`, so WooCommerce printed a second thumbnail and price. The
+`<span class="price">` wrapper is the signature of WooCommerce's `loop/price.php`,
+which proves the second copy is core, not the theme. Measured before the fix:
+2 prices on 60/60 homepage cards and 15/15 cards on `/shop/` and every category.
+
+## Footer — both sites have one; the content differs
+
+An earlier note in this file claimed live's footer was empty. **That was wrong** —
+it came from reading the `<footer>` element near the end of the document, which
+holds only scripts. The real footer is in `hw-footer` containers.
+
+| Element | Correct site | Live |
+|---|---|---|
+| Product tags block (17 tags) | ✅ | ❌ |
+| Trust & Verification page | ✅ | ❌ |
+| Communication preferences | ✅ | ❌ |
+| **Cookie consent banner + preferences manager** | ✅ (6 refs) | ❌ (1 ref) |
+| Toll-free + email contact block | ❌ | ✅ |
+| Footer Categories | ❌ | ✅ (typo: **"Sofware"**) |
+| Copyright year | © 2024 (stale) | © 2026 (correct) |
+
+Copying the correct site's footer wholesale would **regress the copyright to
+2024** and **delete the contact block**. Live is missing the **cookie consent
+banner**, which is a privacy-compliance gap worth closing regardless.
+
+## Backups
+
+There are **no Jetpack backups**. The Jetpack VaultPress Backup plugin is
+installed but **inactive**, and billing shows *"Jetpack VaultPress Backup Plan —
+Activate your product license key"* — the plan is paid for but was never
+activated.
+
+What exists locally instead:
+
+- **524 MB** `antiviruspoint-com-20250218-…wpress` (All-in-One WP Migration;
+  note **.com**, not .org) in `~/.agents-cli/backups/…/local-path-provisioner/`
+- **3.5 MB** `~/Downloads/antiviruspointorg.WordPress.2026-08-02.xml` — content
+  only; the file's own header states it is *not* a complete backup
+
+Hostinger already has **daily backups** enabled.
+
+## Plugin load
+
+**99 plugins, 64 active.** Conflicts that matter:
+
+- **3 active caches**: LiteSpeed Cache + Jetpack Boost + Page Optimize
+- **2 active SSL plugins**: SSL Zen + WP Encryption
+- **WooCommerce 11.0.1 *and* Easy Digital Downloads 3.6.9.1** both active
+- 2 reCAPTCHA plugins, 2 migration plugins (All-in-One WP Migration + Migrate Guru)
+- **GTM4WP** and **Site Kit** both active but emitting no tag before this work
 
 ## Corrected earlier claim
 
-An automated page summary reported "all 18 brand logos fail to load". **That is false.**
-Every logo (`1-2.png` … `17-2.webp`) returns `HTTP 200` with real image bytes. They are
-Elementor `swiper-lazy` images, so the summarizer mistook lazy-load placeholders for
-broken images. No action needed.
+An automated page summary reported "all 18 brand logos fail to load". **False.**
+Every logo (`1-2.png` … `17-2.webp`) returns `HTTP 200` with real image bytes;
+they are Elementor `swiper-lazy` images and the summarizer mistook lazy-load
+placeholders for broken ones.
 
-## Separate, unfixed: the homepage is very heavy
+## Migration to Hostinger hPanel
 
-Not a bug, but the biggest remaining user-visible problem:
+Current Hostinger state: `antiviruspoint.org` exists (created 2026-07-24) but is
+a **blank WordPress 7.0.3 running "Hostinger AI theme 2.1.0"** — not the store —
+and hPanel warns *"Domain isn't connected to your website."*
 
-- **907 KB of HTML** for the homepage alone (before CSS/JS/images)
-- **6.7 s** wall-clock fetch; `server-timing: wp-before-template;dur=2132ms`, cache `MISS;dur=6001ms`
-- Driven by **60 product cards in 8 near-identical carousels** (Popularity, Special Sale,
-  All Products, Deals of the Week, Trending, Featured, Most Purchased, plus per-platform
-  rows) that largely repeat the same products.
+DNS is already on Hostinger nameservers (`ns1/ns2.dns-parking.com`) while the A
+records point at WordPress.com (`192.0.78.173`, `192.0.78.213`). Cutover is
+therefore a single A-record change already under the owner's control — no
+registrar transfer needed.
 
-Removing the duplicate markup will shave some weight, but the real win is cutting the
-number of redundant carousels. That is a design decision, so it is left alone here.
+Order:
+
+1. Take a fresh full backup, or activate the **VaultPress licence already paid for**.
+2. Migrate with **Migrate Guru** (already active). Prefer it over All-in-One WP
+   Migration: the free AIO import cap is ~512 MB and the last archive was
+   **524 MB**, so AIO would fail.
+3. Migrate the **correct-content site**, then set the TFN to `+1-855-535-7753`.
+4. Test on Hostinger's temporary URL **before** touching DNS.
+5. Flip the A record — the only irreversible, customer-visible step.
+6. Re-issue SSL; test checkout end to end (Stripe + PayPal); re-verify the
+   `AW-17518714922` and LinkedIn tags.
+7. Only once verified, cancel WordPress.com Premium and Jetpack Boost.
+
+**Licence risk:** Elementor Pro, ShopEngine, WooCommerce Subscriptions /
+Bundles / Product Add-Ons, AutomateWoo and YITH were provisioned through the
+WordPress.com plan. On Hostinger they need their own licences or they stop
+receiving updates. Decide whether the store is **WooCommerce or EDD** before
+migrating — carrying both doubles the work.
+
+## Blocked
+
+Changing the TFN on the correct-content site needs one of:
+
+- MCP access enabled for site **245503557** (currently `site_level_disabled`), or
+- a browser session against its WP Admin.
