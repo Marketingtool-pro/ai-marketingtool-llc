@@ -1,6 +1,30 @@
 # antiviruspoint.org — findings, 2026-08-12
 
-## STATUS: migrated to Hostinger and verified (DNS not yet switched)
+## STATUS: COMPLETE — live on Hostinger, DNS switched, SSL valid
+
+The `@` A record was changed from WordPress.com (`192.0.78.213`, `192.0.78.173`)
+to Hostinger (`77.37.90.129`) via the Hostinger DNS API, using `overwrite: true`
+scoped to the `@`/`A` pair only, so MX, SPF, DKIM, DMARC and the `www` CNAME were
+left untouched and email was never at risk. Validated before applying, and
+Hostinger keeps zone snapshots for rollback.
+
+Verified over real public DNS afterwards:
+
+| Check | Result |
+|---|---|
+| `antiviruspoint.org` | HTTPS 200 from `77.37.90.129`, **SSL verifies cleanly** |
+| `www.antiviruspoint.org` | HTTPS 200, SSL valid |
+| Propagation | authoritative NS and 8.8.8.8 both return `77.37.90.129` |
+| Old toll-free number | 0 |
+| New number, gtag, footer logo, favicon | all present |
+| Product cards | 60, one price + one image each |
+| Broken assets | 0 |
+
+Remaining cleanup, not blocking: the leftover `fmt` A record still points at
+`192.0.78.213` (a WordPress.com artifact), and the WordPress.com Premium and
+Jetpack Boost subscriptions can be cancelled once a live test order has passed.
+
+## Earlier status: migrated to Hostinger and verified (DNS not yet switched)
 
 The correct-content site is now running on Hostinger and confirmed working by
 resolving `antiviruspoint.org` straight to the Hostinger IP, so nothing depended
