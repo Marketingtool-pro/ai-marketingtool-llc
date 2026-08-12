@@ -1,5 +1,31 @@
 # antiviruspoint.org — findings, 2026-08-12
 
+## STATUS: migrated to Hostinger and verified (DNS not yet switched)
+
+The correct-content site is now running on Hostinger and confirmed working by
+resolving `antiviruspoint.org` straight to the Hostinger IP, so nothing depended
+on DNS:
+
+| Check | Result |
+|---|---|
+| Homepage | HTTP 200, freshly rendered |
+| Product cards | 60 cards, **1 price + 1 image each**, no duplicates |
+| Old toll-free number | **0 occurrences** anywhere |
+| New number `+1-855-535-7753` | present (display + `tel:`) |
+| Purple demo-store bar | gone |
+| Google Ads `AW-17518714922` | present |
+| Staging-domain references | 0 |
+| Data | 57 published products · 26 pages · 42 orders |
+
+**DNS still points at WordPress.com** (`192.0.78.173` / `192.0.78.213`). The
+A-record cutover is the one remaining step and was deliberately not performed.
+
+Rollback if ever needed: the placeholder site is preserved as
+`wp-content-placeholder` plus `~/placeholder-db-backup.sql`, and the original
+`wp-config.php` as `~/wp-config.php.bak`.
+
+
+
 ## The root problem: the paid plan and the domain are on different sites
 
 | | `antiviruspoint.org` | `antiviruspointorgdomainonly.wpcomstaging.com` |
