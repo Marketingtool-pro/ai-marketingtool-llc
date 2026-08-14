@@ -72,6 +72,6 @@ jobs:
           path: dist/
 
       # pypa/gh-action-pypi-publish@v1.12.4
-      - uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc 
+      - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 
         with:
           repository-url: https://test.pypi.org/legacy/
