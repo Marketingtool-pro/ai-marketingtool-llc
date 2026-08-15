@@ -37,7 +37,7 @@ jobs:
 
       - name: Generate Fallback ESLint Config
         run: |
-          echo "module.exports = { env: { browser: true, es2021: true, node: true }, extends: 'eslint:recommended', parserOptions: { ecmaVersion: 'latest', sourceType: 'module' } };" > .eslintrc.js
+          echo "module.exports = { env: { browser: true, es2021: true, node: true }, extends: 'eslint:recommended', parserOptions: { ecmaVersion: 'latest', sourceType: 'module' } };" > .eslintrc.cjs
 
       - name: Run ESLint
         env:
