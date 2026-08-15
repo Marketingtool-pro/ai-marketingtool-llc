@@ -4,7 +4,7 @@
 # documentation.
 # ESLint is a tool for identifying and reporting on patterns
 # found in ECMAScript/JavaScript code.
-# More details at https://github.com/eslint/eslint
+# More details at https://github.com
 # and https://eslint.org
 
 name: ESLint
@@ -30,9 +30,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install ESLint
+      - name: Install Dependencies
         run: |
-          npm install eslint  v8
+          npm install
           npm install @microsoft/eslint-formatter-sarif
 
       - name: Run ESLint
@@ -40,8 +40,6 @@ jobs:
           SARIF_ESLINT_IGNORE_SUPPRESSED: "true"
         run: |
           npx eslint . \
-            --config .eslintrc.js \
-            --ext .js,.jsx,.ts,.tsx \
             --format @microsoft/eslint-formatter-sarif \
             --output-file eslint-results.sarif
         continue-on-error: true
