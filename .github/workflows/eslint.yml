@@ -32,8 +32,12 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          npm install
+          npm install eslint@8
           npm install @microsoft/eslint-formatter-sarif
+
+      - name: Generate Fallback ESLint Config
+        run: |
+          echo "module.exports = { env: { browser: true, es2021: true, node: true }, extends: 'eslint:recommended', parserOptions: { ecmaVersion: 'latest', sourceType: 'module' } };" > .eslintrc.js
 
       - name: Run ESLint
         env:
