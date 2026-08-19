@@ -27,6 +27,6 @@ jobs:
           settings-path: ${{ github.workspace }}
 
       - name: Build and publish to GitHub Packages
-        run: mvn -B deploy --file Developer/copilot-sdk-java/pom.xml -DskipTests
+        run: mvn -B deploy -s ${{ github.workspace }}/settings.xml --file Developer/copilot-sdk-java/pom.xml -DskipTests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
