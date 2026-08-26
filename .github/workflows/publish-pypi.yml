@@ -1,5 +1,5 @@
 # Publishes the Python distribution `ai-marketingtool-llc`.
-#
+# https://test.pypi.org/legacy
 # Uses PyPI Trusted Publishing (OIDC) -- there is no API token to store. The
 # publisher must be registered once on the target index before this can succeed:
 #   https://test.pypi.org/manage/account/publishing/
