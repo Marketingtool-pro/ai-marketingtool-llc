@@ -16,7 +16,9 @@ jobs:
     # registered here (`Loken`, macOS/ARM64) is offline and never matched the
     # X64 label anyway, so this job queued forever and never built. Only
     # Standard GitHub-hosted runners are available, so use the hosted macOS
-    # image - it ships Xcode, xcodebuild and xcpretty, which this job needs.
+    # image, which provides the Xcode toolchain and `xcodebuild` this job needs.
+    # The steps below also pipe through `xcpretty`; that is not a guaranteed part
+    # of the runner image, so the Build step installs it rather than assuming it.
     runs-on: macos-latest
 
     steps:
@@ -28,6 +30,9 @@ jobs:
           default=$(echo $scheme_list | ruby -e "require 'json'; puts JSON.parse(STDIN.gets)['project']['targets'][0]")
           echo $default | cat >default
           echo Using default scheme: $default
+      - name: Install xcpretty
+        run: gem install xcpretty --no-document
+
       - name: Build
         env:
           scheme: ${{ 'default' }}
