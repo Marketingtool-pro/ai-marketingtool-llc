@@ -13,9 +13,16 @@ jobs:
   build:
     name: Build and analyse default scheme using xcodebuild command
     # Was `[self-hosted, macOS, X64]`. No self-hosted runner is registered to
-    # this repository, so nothing could ever claim that label and the job
-    # queued indefinitely. Use the GitHub-hosted macOS image, which provides
-    # the Xcode toolchain and `xcodebuild` these steps need.
+    # this repository - the organisation's only one is registered to another
+    # repository and is ARM64, so it would not have matched X64 either way.
+    # Nothing could claim that label, and the job queued indefinitely. Use the
+    # GitHub-hosted macOS image, which provides the Xcode toolchain and
+    # `xcodebuild` these steps need.
+    #
+    # This drops the explicit X64 constraint: macos-latest currently resolves
+    # to Apple Silicon. No working build is being changed, because no runner
+    # ever satisfied the old label - but if this project later needs x86_64,
+    # pin an Intel image (macos-13) rather than relying on macos-latest.
     runs-on: macos-latest
 
     steps:
