@@ -12,7 +12,12 @@ permissions:
 jobs:
   build:
     name: Build and analyse default scheme using xcodebuild command
-    runs-on: [self-hosted, macOS, X64]
+    # Was `[self-hosted, macOS, X64]`. The only self-hosted runner ever
+    # registered here (`Loken`, macOS/ARM64) is offline and never matched the
+    # X64 label anyway, so this job queued forever and never built. Only
+    # Standard GitHub-hosted runners are available, so use the hosted macOS
+    # image - it ships Xcode, xcodebuild and xcpretty, which this job needs.
+    runs-on: macos-latest
 
     steps:
       - name: Checkout
