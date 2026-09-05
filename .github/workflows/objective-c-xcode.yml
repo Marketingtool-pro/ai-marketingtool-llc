@@ -19,10 +19,11 @@ jobs:
     # GitHub-hosted macOS image, which provides the Xcode toolchain and
     # `xcodebuild` these steps need.
     #
-    # This drops the explicit X64 constraint: macos-latest currently resolves
-    # to Apple Silicon. No working build is being changed, because no runner
-    # ever satisfied the old label - but if this project later needs x86_64,
-    # pin an Intel image (macos-13) rather than relying on macos-latest.
+    # This also drops the explicit X64 constraint. No working build is being
+    # changed, because no runner ever satisfied the old label. If this project
+    # later needs a specific architecture or Xcode version, pin an explicit
+    # runner image instead of macos-latest, and check GitHub's runner-images
+    # documentation for what each label maps to - those mappings change.
     runs-on: macos-latest
 
     steps:
@@ -36,9 +37,15 @@ jobs:
           echo Using default scheme: $default
       # The Build step pipes through xcpretty. It is usually present on the
       # hosted image but is not guaranteed, so fall back to installing it.
-      # sudo avoids the non-writable default gem directory on hosted runners.
+      # A user-scoped install avoids both the non-writable system gem
+      # directory and mutating the runner's system Ruby.
       - name: Ensure xcpretty is available
-        run: command -v xcpretty >/dev/null || sudo gem install xcpretty --no-document
+        run: |
+          set -euo pipefail
+          if ! command -v xcpretty >/dev/null 2>&1; then
+            gem install --user-install xcpretty --no-document
+            echo "$(ruby -e 'puts Gem.user_dir')/bin" >> "$GITHUB_PATH"
+          fi
 
       - name: Build
         env:
