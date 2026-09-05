@@ -13,14 +13,9 @@ jobs:
   build:
     name: Build and analyse default scheme using xcodebuild command
     # Was `[self-hosted, macOS, X64]`. No self-hosted runner is registered to
-    # this repository: the org's only runner (`Loken-Mac`, macOS/ARM64) is
-    # registered to Marketingtool-pro/AiMarketingtool-pro-fbaf2fad, per its
-    # launchd service name, and would not have matched the X64 label regardless.
-    # So this job queued forever and never built. Only
-    # Standard GitHub-hosted runners are available, so use the hosted macOS
-    # image, which provides the Xcode toolchain and `xcodebuild` this job needs.
-    # The steps below also pipe through `xcpretty`; that is not a guaranteed part
-    # of the runner image, so the Build step installs it rather than assuming it.
+    # this repository, so nothing could ever claim that label and the job
+    # queued indefinitely. Use the GitHub-hosted macOS image, which provides
+    # the Xcode toolchain and `xcodebuild` these steps need.
     runs-on: macos-latest
 
     steps:
@@ -32,8 +27,11 @@ jobs:
           default=$(echo $scheme_list | ruby -e "require 'json'; puts JSON.parse(STDIN.gets)['project']['targets'][0]")
           echo $default | cat >default
           echo Using default scheme: $default
-      - name: Install xcpretty
-        run: gem install xcpretty --no-document
+      # The Build step pipes through xcpretty. It is usually present on the
+      # hosted image but is not guaranteed, so fall back to installing it.
+      # sudo avoids the non-writable default gem directory on hosted runners.
+      - name: Ensure xcpretty is available
+        run: command -v xcpretty >/dev/null || sudo gem install xcpretty --no-document
 
       - name: Build
         env:
