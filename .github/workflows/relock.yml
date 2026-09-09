@@ -1,0 +1,32 @@
+name: Relock
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'relock/**'
+permissions:
+  contents: write
+jobs:
+  relock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Regenerate lockfiles
+        run: |
+          for d in Developer/MarketingTool_Phone Developer/MarketingTool_Phone/functions; do
+            echo "== $d"
+            (cd "$d" && npm install --package-lock-only --ignore-scripts --legacy-peer-deps --no-audit --no-fund)
+          done
+      - name: Push lockfiles to a new branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          BR="lockfix/${GITHUB_SHA::7}"
+          git checkout -b "$BR"
+          git add -A
+          git commit -m "chore(deps): regenerate lockfiles" || { echo "no changes"; exit 0; }
+          git push origin "$BR"
+          echo "pushed $BR" >> "$GITHUB_STEP_SUMMARY"
