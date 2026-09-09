@@ -116,6 +116,7 @@
   },
   "private": true,
   "overrides": {
+    "qs": "^6.16.0",
     "expo-file-system": "$expo-file-system",
     "@tootallnate/once": "^3.0.1",
     "protobufjs": "^7.5.5",
@@ -130,6 +131,7 @@
     "@opentelemetry/exporter-prometheus": ">=0.217.0"
   },
   "resolutions": {
+    "qs": "^6.16.0",
     "expo-file-system": "~55.0.10",
     "protobufjs": "^7.5.5",
     "postcss": "^8.5.10",
