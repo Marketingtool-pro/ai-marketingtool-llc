@@ -5,6 +5,9 @@ on:
     branches:
       - "Master"
 
+permissions:
+  contents: read
+
 jobs:
   docker:
     runs-on: ubuntu-latest
