@@ -1,4 +1,4 @@
-monorepo_root = true
+oci = {}
 
 [tools]
 go = "latest"
@@ -10,7 +10,7 @@ python = "3.14"
 uv = "latest"
 pdm = "latest"
 "pipx:pipenv" = "latest"
-node = "24.18.1"
+node = "24.20.0"
 npm = "latest"
 pnpm = "latest"
 yarn = "latest"
@@ -19,7 +19,7 @@ bun = "latest"
 "npm:prettier" = "latest"
 rust = "latest"
 "cargo:starship" = "latest"
-ruby = "3.3"
+ruby = "3.3.12"
 bundler = "latest"
 dotnet = "latest"
 copilot-cli = "latest"
@@ -29,7 +29,7 @@ vp = "latest"
 viteplus = "latest"
 firebase = "latest"
 atmos = "latest"
-podman = "latest"
+podman = "6"
 flatc = "latest"
 oxlint = "latest"
 make = "latest"
@@ -65,8 +65,6 @@ hk = "latest"
 xcodes = "latest"
 cmake = "latest"
 swiftformat = "latest"
-fastfetch = "latest"
-google-java-format = "latest"
 jfrog-cli = "latest"
 json5 = "latest"
 jc = "latest"
@@ -96,22 +94,23 @@ mitmproxy = "latest"
 "aqua:trivy" = "latest"
 "aqua:gruntwork-io/fetch" = "latest"
 "pkgx:stedolan.github.io/jq" = "latest"
-oc = { version = "latest", bin = "oc", checksum_url = "https://openshift.com{{ version }}/sha256sum.txt", platforms = "{ linux-arm64 = { url = https://openshift.com{{ version }}/openshift-client-mac-arm64-{{ version }}.tar.gz } }" }
-openshift-install = { version = "latest", bin = "openshift-install", checksum_url = "https://openshift.com{{ version }}/sha256sum.txt" }
 azure = { version = "latest", uvx_args = "--prerelease=allow" }
 opencode = "latest"
-
-[tasks]
-format = { description = "Format Go files with gofumpt", run = "gofumpt -w ." }
-build = { description = "Build a local bk binary into dist/", run = 'VERSION="$(git describe --tags --dirty --always 2>/dev/null || echo DEV)"; mkdir -p dist && go build -ldflags "-X ://github.com" -o dist/bk .' }
-install = { description = "Install the local bk binary into the active Go bin directory", depends = "[build]", run = 'BIN_DIR="$(go env GOBIN)"; if [ -z "$BIN_DIR" ]; then BIN_DIR="$(go env GOPATH)/bin"; fi; mkdir -p "$BIN_DIR"; install -m 0755 dist/bk "$BIN_DIR/bk"' }
-"install:global" = { description = "Install the local bk binary into ~/bin", depends = "[build]", run = 'mkdir -p "$HOME/bin"; install -m 0755 dist/bk "$HOME/bin/bk"' }
-lint = { description = "Run golangci-lint with the repository configuration", run = "golangci-lint run --verbose --timeout 3m" }
-test = { description = "Run the Go test suite", run = "go test ./..." }
-vulncheck = { description = "Run govulncheck against all packages", run = "govulncheck ./..." }
-generate = { description = "Regenerate the GraphQL client code", run = "go generate ./cmd/generate" }
-hooks = { description = "Install the repository git hooks", run = "lefthook install" }
-ci = { description = "Run the main local CI checks", depends = "[lint, test, vulncheck]" }
+codeql = "latest"
+cargo-binstall = "latest"
+pipx = "latest"
+just = "latest"
+oc = "4"
+oci = "3"
+android-sdk = "latest"
+android-cli = { version = "latest", bin = "android", version_list_url = "https://dl.google.com/android/cli/latest/debian/dists/stable/main/binary-amd64/Packages", version_regex = '(?m)^Version: (\S+)$', platforms = { linux-x64 = { checksum_url = "https://dl.google.com/android/cli/{{ version }}/linux_x86_64/android.sha256", url = "https://dl.google.com/android/cli/{{ version }}/linux_x86_64/android" }, macos-arm64 = { checksum_url = "https://dl.google.com/android/cli/{{ version }}/darwin_arm64/android.sha256", url = "https://dl.google.com/android/cli/{{ version }}/darwin_arm64/android" }, macos-x64 = { checksum_url = "https://dl.google.com/android/cli/{{ version }}/darwin_x86_64/android.sha256", url = "https://dl.google.com/android/cli/{{ version }}/darwin_x86_64/android" }, windows-arm64 = { bin = "android.exe", checksum_url = "https://dl.google.com/android/cli/{{ version }}/windows_x86_64/android.exe.sha256", url = "https://dl.google.com/android/cli/{{ version }}/windows_x86_64/android.exe" }, windows-x64 = { bin = "android.exe", checksum_url = "https://dl.google.com/android/cli/{{ version }}/windows_x86_64/android.exe.sha256", url = "https://dl.google.com/android/cli/{{ version }}/windows_x86_64/android.exe" } } }
+bazelisk = "latest"
+cargo-dist = "latest"
+clang-format = "latest"
+ghc = "latest"
+docker-cli = "latest"
+trunk = "latest"
+vercel = { version = "latest", allow_builds = ["esbuild"], trust_policy_excludes = ["undici"] }
 
 [deps]
 uv = { auto = false }
@@ -134,7 +133,6 @@ activate_aggressive = true
 all_compile = false
 always_keep_install = true
 auto_install = true
-auto_env = true
 always_keep_download = false
 slsa = true
 exec_auto_install = true
@@ -147,3 +145,6 @@ cargo = {}
 dotfiles = {}
 dotnet = {}
 forgejo = {}
+"dotnet.registry_url" = ""
+"npm.package_manager" = ""
+"pipx.registry_url" = ""

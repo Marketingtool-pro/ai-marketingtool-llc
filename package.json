@@ -1,29 +1,65 @@
 {
-  "name": "ai-marketingtool-llc",
-  "version": "0.0.0",
-  "private": true,
+  "name": "@marketingtool-pro/ai-marketingtool-llc",
+  "version": "1.0.0",
+  "description": "MarketingTool.pro Claude Agent — campaign management, ad copy, keyword research",
+  "type": "module",
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "src",
+    "scripts",
+    "public",
+    "Dockerfile",
+    "README.md"
+  ],
   "scripts": {
-    "start": "node ./bin/www"
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc && node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "author": "MarketingTool.pro",
+  "license": "ISC",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Marketingtool-pro/ai-marketingtool-llc.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Marketingtool-pro/ai-marketingtool-llc/issues"
+  },
+  "homepage": "https://github.com/Marketingtool-pro/ai-marketingtool-llc#readme",
+  "engines": {
+    "node": ">=22.0.0"
   },
   "dependencies": {
-    "@marketingtool/developer": "^2.0.4",
-    "cookie-parser": "~1.4.4",
-    "debug": "~2.6.9",
-    "express": "~4.16.1",
-    "http-errors": "~1.6.3",
-    "ignore-walk": "^9.0.0",
-    "jade": "~1.11.0",
-    "morgan": "~1.9.1",
-    "npm-packlist": "^11.3.0",
-    "pug": "^3.0.4",
-    "tar": "^7.5.22"
+    "@actions/artifact": "^6.2.1",
+    "@actions/attest": "^3.2.0",
+    "@actions/core": "^3.0.1",
+    "@actions/exec": "^3.0.0",
+    "@actions/glob": "^0.7.0",
+    "@actions/http-client": "^4.0.1",
+    "@actions/io": "^3.0.2",
+    "@actions/tool-cache": "^4.0.0",
+    "@anthropic-ai/claude-agent-sdk": "^0.3.239",
+    "@vercel/speed-insights": "^2.0.0",
+    "express": "^5.2.1",
+    "react-router": "^8.4.0",
+    "semver": "^7.8.5",
+    "vercel": "^59.17.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
-    "@types/node": "^26.3.0",
-    "typescript": "^7.0.2",
-    "@types/bun": "latest"
+    "@types/node": "^26.2.0",
+    "typescript": "^7.0.2"
   },
-  "module": "src/index.ts",
-  "type": "module"
+  "overrides": {
+    "fast-uri": "^4.1.4",
+    "qs": "^6.16.0"
+  }
 }

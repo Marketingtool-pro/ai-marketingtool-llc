@@ -20,8 +20,6 @@ __pypackages__/
 # uv.lock is wanted for reproducible CI, but a global ignore rule (*.lock)
 # would otherwise hide it.
 !uv.lock
-
-
-# Added by cargo
-
-/target
+.vscode/mcp.json
+.vercel
+.env*
