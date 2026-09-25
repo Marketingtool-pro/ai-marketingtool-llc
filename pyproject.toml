@@ -42,9 +42,14 @@ dev = [
     "pytest>=8",
     "pytest-asyncio (>=1.4.0,<2.0.0)",
 ]
+build = [
+    "setuptools (>=84.0.0,<85.0.0)",
+    "cython (>=3.3.0,<4.0.0)"
+]
 
 [build-system]
 requires = ["pdm-backend"]
+uv = true
 build-backend = "pdm.backend"
 
 # The npm package (@marketingtool-pro/ai-marketingtool-llc) ships "src", so the
@@ -64,3 +69,14 @@ members = [
     "mcp-on-cloudrun",
     "AiMarketingtool-pro-fbaf2fad/try-scipy",
 ]
+
+[[tool.poetry.source]]
+name = "foo"
+url = "https://foo.bar/simple/"
+priority = "primary"
+
+
+[[tool.poetry.source]]
+name = "PyPI"
+priority = "primary"
+

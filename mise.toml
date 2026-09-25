@@ -20,12 +20,10 @@ bun = "latest"
 rust = "latest"
 "cargo:starship" = "latest"
 ruby = "3.3.12"
-bundler = "latest"
+bundler = "2"
 dotnet = "latest"
 copilot-cli = "latest"
-copilot = "latest"
 claude = "latest"
-vp = "latest"
 viteplus = "latest"
 firebase = "latest"
 atmos = "latest"
@@ -107,7 +105,6 @@ android-cli = { version = "latest", bin = "android", version_list_url = "https:/
 bazelisk = "latest"
 cargo-dist = "latest"
 clang-format = "latest"
-ghc = "latest"
 docker-cli = "latest"
 trunk = "latest"
 vercel = { version = "latest", allow_builds = ["esbuild"], trust_policy_excludes = ["undici"] }
@@ -117,7 +114,6 @@ uv = { auto = false }
 pnpm = { auto = false }
 bundler = { auto = false }
 npm = { auto = false }
-go = { auto = false }
 bun = { auto = false }
 composer = { auto = false }
 bazel = { auto = false }
@@ -145,6 +141,3 @@ cargo = {}
 dotfiles = {}
 dotnet = {}
 forgejo = {}
-"dotnet.registry_url" = ""
-"npm.package_manager" = ""
-"pipx.registry_url" = ""

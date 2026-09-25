@@ -34,7 +34,7 @@
   },
   "homepage": "https://github.com/Marketingtool-pro/ai-marketingtool-llc#readme",
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=24.21.0"
   },
   "dependencies": {
     "@actions/artifact": "^6.2.1",
@@ -48,12 +48,19 @@
     "@anthropic-ai/claude-agent-sdk": "^0.3.239",
     "@vercel/speed-insights": "^2.0.0",
     "express": "^5.2.1",
+    "next": "^16.3.5",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
     "react-router": "^8.4.0",
     "semver": "^7.8.5",
     "vercel": "^59.17.0",
+    "workflow": "^4.8.9",
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@swc/cli": "^0.8.1",
+    "@swc/core": "^1.15.3",
+    "@types/bun": "latest",
     "@types/express": "^5.0.6",
     "@types/node": "^26.2.0",
     "typescript": "^7.0.2"
@@ -61,5 +68,12 @@
   "overrides": {
     "fast-uri": "^4.1.4",
     "qs": "^6.16.0"
-  }
+  },
+  "allowScripts": {
+    "cbor-extract@2.2.2": true,
+    "esbuild@0.27.0": true,
+    "esbuild@0.28.2": true,
+    "@swc/core@1.15.3": true
+  },
+  "private": true
 }
