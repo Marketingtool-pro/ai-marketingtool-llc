@@ -1,0 +1,16 @@
+# GitHub Pages (legacy Jekyll build from Master:/).
+# Developer/ holds the app source trees; their docs contain JSX like
+# `{{ headerShown: false }}` that Liquid cannot parse, which failed every
+# Pages build since 2026-08-23. Setting `exclude` replaces Jekyll's defaults,
+# so the default entries are listed again below.
+exclude:
+  - Developer/
+  - node_modules/
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+  - Gemfile
+  - Gemfile.lock
+  - .sass-cache/
+  - .jekyll-cache/
