@@ -375,6 +375,8 @@ const BYPASS_GUARD_HOOK = {
 };
 
 const app = express();
+// Do not advertise the framework/version to clients.
+app.disable("x-powered-by");
 app.use(express.json());
 app.use(express.static("public"));
 
