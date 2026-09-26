@@ -11,6 +11,9 @@ on:
     branches: [ "master" ]
 
 permissions:
+  # The reusable workflow requests actions: read; a caller must grant it or
+  # GitHub rejects the run before any job starts.
+  actions: read
   security-events: write
   contents: read
 
