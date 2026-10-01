@@ -40,7 +40,7 @@
     "amazon-cognito-identity-js": "^6.3.16",
     "apexcharts": "^5.10.4",
     "appwrite": "^23.0.0",
-    "axios": "^1.18.0",
+    "axios": "^1.20.0",
     "d3": "^7.9.0",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.20",
