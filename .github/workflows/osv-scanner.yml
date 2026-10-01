@@ -2,13 +2,13 @@ name: OSV-Scanner
 
 on:
   pull_request:
-    branches: [ "master" ]
+    branches: [ "Master" ]
   merge_group:
-    branches: [ "master" ]
+    branches: [ "Master" ]
   schedule:
     - cron: '31 8 * * 3'
   push:
-    branches: [ "master" ]
+    branches: [ "Master" ]
 
 permissions:
   # The reusable workflow requests actions: read; a caller must grant it or
