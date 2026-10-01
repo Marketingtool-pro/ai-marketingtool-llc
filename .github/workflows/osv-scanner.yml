@@ -22,20 +22,17 @@ jobs:
     if: ${{ github.event_name == 'push' || github.event_name == 'schedule' }}
     uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@a345acffa64b0eaede81a3d9aae6141214d9c8fc" # v2.6.0
     with:
-      # Example of specifying custom arguments
+      # osv-scanner v2 removed the old git-skip flag; git roots are skipped by default
       scan-args: |-
         -r
-        --skip-git
         ./
 
   scan-pr:
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
     uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@a345acffa64b0eaede81a3d9aae6141214d9c8fc" # v2.6.0
     with:
-      # Example of specifying custom arguments
       scan-args: |-
         -r
-        --skip-git
         ./
 
   osv-scan:
@@ -44,20 +41,22 @@ jobs:
     steps:
       # 1. Repository Checkout (Pinned to v4.2.2)
       - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       # 2. Run the OSV-Scanner Action directly (Pinned to v2.6.0)
       - name: Run OSV-Scanner
+        continue-on-error: true # vulnerabilities found should still upload the report
         uses: google/osv-scanner-action/osv-scanner-action@a345acffa64b0eaede81a3d9aae6141214d9c8fc
         with:
           scan-args: |-
+            --format=sarif
+            --output-file=results.sarif
             -r
-            --skip-git
             ./
 
       # 3. Upload Results to GitHub Security Tab (Pinned to v3.28.10)
       - name: Upload SARIF report
-        if: always() # Ensures results upload even if vulnerabilities are found
-        uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 
+        if: always() && hashFiles('results.sarif') != ''
+        uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2
         with:
           sarif_file: results.sarif
