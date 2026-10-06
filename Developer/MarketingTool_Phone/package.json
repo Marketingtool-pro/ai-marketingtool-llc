@@ -87,7 +87,7 @@
     "material-symbols": "^0.44.0",
     "react": "19.2.6",
     "react-dom": "19.2.0",
-    "react-native": "0.83.6",
+    "react-native": "0.87.1",
     "react-native-appwrite": "0.29.0",
     "react-native-edge-to-edge": "^1.8.1",
     "react-native-gesture-handler": "2.30.0",
