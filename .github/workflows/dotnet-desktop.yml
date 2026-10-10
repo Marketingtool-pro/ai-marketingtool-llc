@@ -41,11 +41,27 @@ name: .NET Core Desktop
 permissions:
   contents: read
 
+# Runs only when .NET sources change; the repo has no .sln/.csproj yet,
+# so building on every push just failed on the placeholder env values below.
 on:
   push:
     branches: [ "Master" ]
+    paths:
+      - "**/*.sln"
+      - "**/*.slnx"
+      - "**/*.csproj"
+      - "**/*.wapproj"
+      - "**/*.cs"
+      - "**/*.xaml"
   pull_request:
     branches: [ "Master" ]
+    paths:
+      - "**/*.sln"
+      - "**/*.slnx"
+      - "**/*.csproj"
+      - "**/*.wapproj"
+      - "**/*.cs"
+      - "**/*.xaml"
 
 jobs:
 
@@ -65,6 +81,10 @@ jobs:
       Wap_Project_Path: your-wap-project-path                   # Replace with the path to your Wap project, i.e. MyWpf.App.Package\MyWpfApp.Package.wapproj.
 
     steps:
+    # Some web image paths exceed Windows' 260-char limit ("Filename too long")
+    - name: Enable long paths for git
+      run: git config --system core.longpaths true
+
     - name: Checkout
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       with:
