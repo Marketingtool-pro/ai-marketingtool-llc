@@ -39,6 +39,13 @@
     "@opentelemetry/auto-instrumentations-node": ">=0.75.0",
     "@opentelemetry/sdk-node": ">=0.217.0",
     "@opentelemetry/exporter-prometheus": ">=0.217.0",
-    "@tootallnate/once": ">=3.0.1"
+    "@tootallnate/once": ">=3.0.1",
+    "handlebars": "^4.7.10",
+    "protobufjs": "^7.6.5",
+    "uuid": "^11.1.1",
+    "form-data@2": "^2.5.6",
+    "@opentelemetry/core@2": "^2.10.0",
+    "@opentelemetry/resources@2": "^2.10.0",
+    "@opentelemetry/sdk-metrics@2": "^2.10.0"
   }
 }
