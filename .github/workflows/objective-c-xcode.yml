@@ -2,9 +2,9 @@ name: Xcode - Build and Analyze
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "Master" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "Master" ]
 
 permissions:
   contents: read
