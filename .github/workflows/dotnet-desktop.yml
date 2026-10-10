@@ -43,9 +43,9 @@ permissions:
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "Master" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "Master" ]
 
 jobs:
 
