@@ -3,7 +3,7 @@ name: ci
 on:
   push:
     branches:
-      - "master" # Enforce lowercase if your branch is 'master'
+      - "Master" # Enforce lowercase if your branch is 'master'
 
 permissions:
   contents: read
