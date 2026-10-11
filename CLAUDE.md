@@ -18,5 +18,6 @@ Web imports use the `@/` alias (`@/components/...`); bare `components/...` break
 ## Dependencies
 - Relock with `npm install --package-lock-only --ignore-scripts --legacy-peer-deps` (same as `.github/workflows/relock.yml`).
 - Security fixes go in `overrides` in each app's `package.json`. Check with `osv-scanner scan -L <path>/package-lock.json`.
-- Known blocked findings (do not force majors): `@opentelemetry/core` 1.x (genkit pins `~1.25`), `image-size` 1.x (Expo metro), `braces` / `node-forge` (no fix released), dev-only `esbuild`, `ts-deepmerge`, `postcss-selector-parser`.
+- Known blocked findings (do not force majors): `@opentelemetry/core` 1.x (genkit pins `~1.25`), `image-size` 1.x (Expo metro passes file paths, 2.x dropped them), `braces` / `node-forge` (no fix released), dev-only `ts-deepmerge` (firebase-functions-test needs its 2.x default export). These are listed with reasons and expiry dates in `osv-scanner.toml`; CI passes `--config=osv-scanner.toml`.
+- Already fixed by override (checked compatible, keep them): `esbuild` ^0.28.1 (Phone; 0.28 has no API changes) and `postcss-selector-parser` ^7.1.6 scoped to `@tailwindcss/typography` (Web; identical plugin output to 6.0.10).
 - CLI tools (`vercel`, `npm`, `forever`) belong in global installs, never in `dependencies`.
