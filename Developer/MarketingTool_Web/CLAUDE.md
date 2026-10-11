@@ -1,5 +1,12 @@
 # MarketingTool Web App — Customer Portal
 
+> **This folder is an older snapshot.** The live web app is `~/ai-marketingtool-llc/web-app-router-`, and its
+> CLAUDE.md was checked against the running servers on 2026-09-12. Where the two disagree, that file wins.
+> Known differences: the AI Router has 8 distinct models (claude-sonnet-4-5, gemini-2.5-flash, dall-e-3,
+> sd3.5-large, Kling, gpt-4o, qwen3-vl-8b, llama-3.3-70b), not the table below; the live config is
+> `vite.config.mjs` and the TanStack Router files are unused leftovers; Ad Library's demo ads were removed
+> (no demo data anywhere). The phone app is `~/ai-marketingtool-llc/AiMarketingtool-pro-fbaf2fad`.
+
 ## THIS IS A CUSTOMER PORTAL, NOT ADMIN
 
 - Customers use this to manage their marketing.
@@ -47,7 +54,7 @@ Per-page stack (one set per tool group on the page):
 
 ### 2. Phone App Workflow (Completely Separate Codebase)
 
-- Package: `pro.marketingtool.app` at `/Users/loken/Developer/AiMarketingtool-pro-fbaf2fad`
+- Package: `pro.marketingtool.app` at `/Users/loken/ai-marketingtool-llc/AiMarketingtool-pro-fbaf2fad`
 - **Auth/OTP**: Firebase Authentication (phone → SMS OTP) + Appwrite OAuth for Google/Facebook/Apple
 - **SMS delivery**: MSG91 + MessageBird via Appwrite Function `msg91-proxy`
 - **Tool engine**: Appwrite Functions (`tool-executor`, `chat-ai`) + Firebase GenKit
