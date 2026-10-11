@@ -1,5 +1,12 @@
 # ai-marketingtool-llc
 
+## Where each app really lives (read first)
+The live apps are separate git repos inside `~/ai-marketingtool-llc`, each with its own CLAUDE.md:
+- Web app (customer portal): `~/ai-marketingtool-llc/web-app-router-` (repo `Marketingtool-pro/web-app-router-`). Its CLAUDE.md was checked against the live servers and wins over any other web notes.
+- Phone app: `~/ai-marketingtool-llc/AiMarketingtool-pro-fbaf2fad` (repo `Marketingtool-pro/AiMarketingtool-pro-fbaf2fad`, Expo 57).
+
+`Developer/MarketingTool_Web` and `Developer/MarketingTool_Phone` below are older snapshots kept in this repo (Phone here is Expo 55 / v1.5.0; the real one is Expo 57 / v1.5.22). Fix product bugs in the real repos, not here, unless the owner says this repo.
+
 ## Repo facts
 - Default branch is `Master` (capital M). Lowercase `master` has unrelated history — open PRs with `--base Master`. CI workflows trigger on `Master`.
 - Every GitHub Action must be pinned to a full commit SHA with a version comment (`uses: owner/action@<40-char sha> # vX.Y.Z`); tag refs like `@v4` fail at "Set up job".
@@ -18,5 +25,6 @@ Web imports use the `@/` alias (`@/components/...`); bare `components/...` break
 ## Dependencies
 - Relock with `npm install --package-lock-only --ignore-scripts --legacy-peer-deps` (same as `.github/workflows/relock.yml`).
 - Security fixes go in `overrides` in each app's `package.json`. Check with `osv-scanner scan -L <path>/package-lock.json`.
-- Known blocked findings (do not force majors): `@opentelemetry/core` 1.x (genkit pins `~1.25`), `image-size` 1.x (Expo metro), `braces` / `node-forge` (no fix released), dev-only `esbuild`, `ts-deepmerge`, `postcss-selector-parser`.
+- Known blocked findings (do not force majors): `@opentelemetry/core` 1.x (genkit pins `~1.25`), `image-size` 1.x (Expo metro passes file paths, 2.x dropped them), `braces` / `node-forge` (no fix released), dev-only `ts-deepmerge` (firebase-functions-test needs its 2.x default export). These are listed with reasons and expiry dates in `osv-scanner.toml`; CI passes `--config=osv-scanner.toml`.
+- Already fixed by override (checked compatible, keep them): `esbuild` ^0.28.1 (Phone; 0.28 has no API changes) and `postcss-selector-parser` ^7.1.6 scoped to `@tailwindcss/typography` (Web; identical plugin output to 6.0.10).
 - CLI tools (`vercel`, `npm`, `forever`) belong in global installs, never in `dependencies`.

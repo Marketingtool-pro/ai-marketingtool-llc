@@ -2,7 +2,12 @@
 name: read-everything-first
 enabled: true
 event: prompt
-pattern: .*
+# A plain `pattern:` on a prompt rule checks a field hookify never fills, so it never fired.
+# `user_prompt` is filled (empty string at worst), so `.*` now matches every message.
+conditions:
+  - field: user_prompt
+    operator: regex_match
+    pattern: .*
 action: warn
 ---
 
