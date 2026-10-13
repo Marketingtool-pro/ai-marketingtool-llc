@@ -1,4 +1,5 @@
 import express from "express";
+import helmet from "helmet";
 import { query, tool, createSdkMcpServer } from "@anthropic-ai/claude-agent-sdk";
 import { z } from "zod";
 
@@ -375,6 +376,10 @@ const BYPASS_GUARD_HOOK = {
 };
 
 const app = express();
+// Security headers (CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, ...).
+// Helmet defaults: scripts only from 'self' (public/app.js), no cross-origin framing, no X-Powered-By.
+// No CORS middleware is added, so cross-origin behaviour is unchanged (same-origin only).
+app.use(helmet());
 app.use(express.json());
 app.use(express.static("public"));
 

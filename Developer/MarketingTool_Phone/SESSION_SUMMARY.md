@@ -21,11 +21,11 @@
 **AI Backend:** Windmill
 - URL: `https://wm.marketingtool.pro`
 - Workspace: `marketingtool-pro`
-- Token: `wm_token_marketingtool_2024`
+- Token: `<WINDMILL_TOKEN>`
 
-**Expo Access Token:** `FeMBZxek4_UvIVq9PE0m4Y-cPynHTWtLZmiZshBO`
+**Expo Access Token:** `<EXPO_TOKEN>`
 - Used for: EAS builds, push notifications
-- Set as env: `EXPO_TOKEN=6iCzilKqGA54U_uzOQsmaeHvcjxGBiRqYGVjPh7e`
+- Set as env: `EXPO_TOKEN=<EXPO_TOKEN>`
 - AI: Claude Opus 4.5
 
 **Web App (SEPARATE):** Next.js at `app.marketingtool.pro` - WORKING ✅
@@ -136,7 +136,7 @@ const result = await WebBrowser.openAuthSessionAsync(oauthUrl, 'marketingtool://
 ```typescript
 const WINDMILL_BASE = 'https://wm.marketingtool.pro';
 const WINDMILL_WORKSPACE = 'marketingtool-pro';
-const WINDMILL_TOKEN = 'wm_token_marketingtool_2024';
+const WINDMILL_TOKEN = '<WINDMILL_TOKEN>';
 
 fetch(`${WINDMILL_BASE}/api/w/${WINDMILL_WORKSPACE}/jobs/run_wait_result/p/f/mobile/chat_ai`, {
   headers: { 'Authorization': `Bearer ${WINDMILL_TOKEN}` }
@@ -155,7 +155,7 @@ ssh root@31.220.107.19
 
 **Appwrite Database:**
 ```bash
-docker exec appwrite-mariadb mysql -u user -ppassword appwrite -e "YOUR_QUERY"
+docker exec appwrite-mariadb mysql -u "$_APP_DB_USER" -p appwrite -e "YOUR_QUERY"
 ```
 
 **Clear Appwrite Cache (IMPORTANT):**
@@ -329,7 +329,7 @@ curl -I "https://api.marketingtool.pro/v1/account/tokens/oauth2/google?..."
 **Windmill Configuration:**
 - URL: https://wm.marketingtool.pro
 - Workspace: marketingtool-pro
-- Token: wm_token_marketingtool_2024
+- Token: <WINDMILL_TOKEN>
 - Anthropic Resource: u/admin/dauntless_anthropic
 
 ### DASHBOARD ANIMATIONS ADDED ✅
@@ -376,25 +376,25 @@ SESSION_SUMMARY.md - Updated
 ```bash
 # List scripts
 curl -s "https://wm.marketingtool.pro/api/w/marketingtool-pro/scripts/list?path_start=f/mobile" \
-  -H "Authorization: Bearer wm_token_marketingtool_2024"
+  -H "Authorization: Bearer <WINDMILL_TOKEN>"
 
 # Test AI generation
 curl -X POST "https://wm.marketingtool.pro/api/w/marketingtool-pro/jobs/run_wait_result/p/f/mobile/ai_generate" \
-  -H "Authorization: Bearer wm_token_marketingtool_2024" \
+  -H "Authorization: Bearer <WINDMILL_TOKEN>" \
   -d '{"tool_slug": "...", "tool_name": "...", ...}'
 
 # Test chat
 curl -X POST "https://wm.marketingtool.pro/api/w/marketingtool-pro/jobs/run_wait_result/p/f/mobile/chat_ai" \
-  -H "Authorization: Bearer wm_token_marketingtool_2024" \
+  -H "Authorization: Bearer <WINDMILL_TOKEN>" \
   -d '{"messages": [{"role": "user", "content": "..."}]}'
 ```
 
 ### EXPO ACCESS TOKEN
 
 ```
-FeMBZxek4_UvIVq9PE0m4Y-cPynHTWtLZmiZshBO
+<EXPO_TOKEN>
 ```
-Use: `EXPO_TOKEN=6iCzilKqGA54U_uzOQsmaeHvcjxGBiRqYGVjPh7e npx eas-cli ...`
+Use: `EXPO_TOKEN=<EXPO_TOKEN> npx eas-cli ...`
 
 ---
 
@@ -540,14 +540,14 @@ DATABASE_ID=marketingtool_db
 # Windmill
 WINDMILL_BASE=https://wm.marketingtool.pro
 WINDMILL_WORKSPACE=marketingtool-pro
-WINDMILL_TOKEN=wm_token_marketingtool_2024
+WINDMILL_TOKEN=<WINDMILL_TOKEN>
 
 # Expo
-EXPO_TOKEN=6iCzilKqGA54U_uzOQsmaeHvcjxGBiRqYGVjPh7e
+EXPO_TOKEN=<EXPO_TOKEN>
 
 # SSH
 SSH_HOST=root@31.220.107.19
-PASSWORD=Cloth-vastr@123#
+PASSWORD=<REDACTED: use SSH keys; never store the root password in the repo>
 
 # Admin
 ADMIN_EMAIL=help@marketingtool.pro
@@ -853,7 +853,7 @@ src/assets/animations/liquid-wave.json (NEW)
 1. **Standardized `app.json` Paths**: Removed `./` from `googleServicesFile` paths (Standard EAS resolution fix).
 2. **Fixed `eas.json` for TestFlight**: Removed broken local path to `AuthKey_D5KG7J5R95.p8`. EAS now uses credentials from its secure store.
 3. **Corrected Android Build Type**: Added explicit `buildType: "app-bundle"` for production Android.
-4. **Updated Expo Access Token**: Configured new token `6iCzilKqGA54U_uzOQsmaeHvcjxGBiRqYGVjPh7e`.
+4. **Updated Expo Access Token**: Configured new token `<EXPO_TOKEN>`.
 
 ### CRITICAL CODE CLEANUP (BUNDLER FIXES) ✅
 
