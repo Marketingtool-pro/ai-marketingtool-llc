@@ -127,7 +127,7 @@ URL: `http://172.17.0.1:9000` (Docker) / `http://31.220.107.19:9000` (external)
 
 ## Meta API — CONFIRMED WORKING
 - Token: stored as `f/tools/fb_ads_access_token` (secret)
-- App Secret: `33a09172df2d69e54f4b6fd0160ec6b4` (stored as `f/tools/fb_ads_app_secret`)
+- App Secret: `<REDACTED>` (stored as `f/tools/fb_ads_app_secret`)
 - App ID: `1582682256320433` (MarketingTool Ads)
 - Requires `appsecret_proof` — handled by `meta-api-helper` script
 - 7 accounts found: act_337789233629380 (main, ₹9L), act_1725433101404586 (Antiviruspoint), etc.
@@ -135,7 +135,7 @@ URL: `http://172.17.0.1:9000` (Docker) / `http://31.220.107.19:9000` (external)
 - Permissions: ads_management, ads_read, read_insights
 
 ## Google Ads — Via Vertex AI Agent
-- Developer token: `P9XpJTy27ySZchM9WTVmQw` (Test Account, Basic Access pending)
+- Developer token: `<REDACTED: Google Ads developer token, keep in a secret store>` (Test Account, Basic Access pending)
 - Vertex AI Agent code at: `/Users/loken/marketingtool-agent/app/agent.py`
 - GitHub: `https://github.com/Lokeninfinitypoint/marketingtool`
 - GCP Project: `marketing-tool-484720`
