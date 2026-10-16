@@ -49,7 +49,7 @@ jobs:
       # 2. Run the OSV-Scanner Action directly (Pinned to v2.6.0)
       - name: Run OSV-Scanner
         continue-on-error: true # vulnerabilities found should still upload the report
-        uses: google/osv-scanner-action/osv-scanner-action@a345acffa64b0eaede81a3d9aae6141214d9c8fc
+        uses: google/osv-scanner-action/osv-scanner-action@b1d267aea5211fa648d9d442fa64b90dbdcbdd36
         with:
           scan-args: |-
             --format=sarif
