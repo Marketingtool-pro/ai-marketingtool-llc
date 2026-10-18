@@ -18,10 +18,11 @@ input.addEventListener('input',function(){this.style.height='auto';this.style.he
 const has=this.value.trim();btn.className=has?'active':'inactive';btn.disabled=!has||loading;});
 input.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
 btn.addEventListener('click',send);
+function agentToken(){let t='';try{t=localStorage.getItem('agentToken')||'';}catch(e){}if(!t){t=prompt('Agent API token')||'';try{localStorage.setItem('agentToken',t);}catch(e){}}return t;}
 async function send(){const text=input.value.trim();if(!text||loading)return;
 loading=true;btn.disabled=true;btn.className='inactive';addMsg('user',text);input.value='';input.style.height='auto';
 showTyping();
-try{const r=await fetch('/agent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:text})});
+try{const r=await fetch('/agent',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+agentToken()},body:JSON.stringify({prompt:text})});
 const d=await r.json();removeTyping();
 if(d.response)addMsg('assistant',d.response);else if(d.error)addMsg('assistant','Error: '+d.error);
 else addMsg('assistant',JSON.stringify(d));}
