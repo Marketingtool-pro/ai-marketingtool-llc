@@ -1,4 +1,5 @@
 import express from "express";
+import { timingSafeEqual } from "node:crypto";
 import helmet from "helmet";
 import { query, tool, createSdkMcpServer } from "@anthropic-ai/claude-agent-sdk";
 import { z } from "zod";
@@ -388,6 +389,16 @@ app.get("/healthz", (_req, res) => {
 });
 
 app.post("/agent", async (req, res) => {
+  // Auth: every call must send "Authorization: Bearer <AGENT_API_TOKEN>".
+  // This endpoint can delete users, refund/cancel Stripe and run Windmill
+  // scripts, so it is closed unless the token env var is set and matches.
+  const expected = process.env.AGENT_API_TOKEN || "";
+  const got = (req.headers.authorization || "").replace(/^Bearer\s+/i, "");
+  const a = Buffer.from(got), b = Buffer.from(expected);
+  if (!expected || a.length !== b.length || !timingSafeEqual(a, b)) {
+    res.status(401).json({ error: "unauthorized" });
+    return;
+  }
   const { prompt } = req.body;
   if (!prompt) { res.status(400).json({ error: "prompt is required" }); return; }
 
