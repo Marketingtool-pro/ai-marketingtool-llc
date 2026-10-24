@@ -64,9 +64,11 @@ hr; echo ""
 
 # ── 1. GIT IDENTITY ───────────────────────────────
 info "Git org identity..."
+# 2026-10-24: the org repos reject pushes made with a private email (CLAUDE.md "Repo facts");
+# commits must carry the GitHub noreply address, not Help@marketingtool.pro.
 git config --global user.name  "Marketingtool-pro"
-git config --global user.email "Help@marketingtool.pro"
-ok "Git → Marketingtool-pro <Help@marketingtool.pro>"
+git config --global user.email "304695078+help772@users.noreply.github.com"
+ok "Git → Marketingtool-pro <304695078+help772@users.noreply.github.com>"
 
 # ── 2. SDKMAN (RETIRED 2026-07-05) ────────────────
 # Deleted in the full-mac clean — Java comes from Temurin (JAVA_HOME in
@@ -379,16 +381,18 @@ info "Clasp auth bypass..."
 # ~/.clasprc.json, that's fine — don't warn about a key we don't need.
 _CLASP_KEY="$HOME/.secrets/credentials_backup/marketing-tool-484720-40a8b411afcf.json"
 [[ -f "$_CLASP_KEY" ]] || _CLASP_KEY="$HOME/Developer/credentials_backup/marketing-tool-484720-40a8b411afcf.json"
+# 2026-10-24: clasp 3.x has no service-account login and never writes isServiceAccount to
+# ~/.clasprc.json. The bypass is Application Default Credentials: GOOGLE_APPLICATION_CREDENTIALS
+# (recorded in ~/.env by id-clasp-bypass) + the global `--adc` flag (a clasp() wrapper in ~/.zshrc).
+_CLASP_SA="id-clasp-bypas@marketing-tool-484720.iam.gserviceaccount.com"
 if [[ -f "$_CLASP_KEY" ]]; then
-  if ~/.local/bin/id-clasp-bypass "id-clasp-bypas@marketing-tool-484720.iam.gserviceaccount.com" "$_CLASP_KEY" &>/dev/null; then
-    ok "Clasp bypass configured (using service account)"
+  if ~/.local/bin/id-clasp-bypass "$_CLASP_SA" "$_CLASP_KEY" &>/dev/null; then
+    ok "Clasp bypass configured (service account via --adc)"
   else
     warn "Clasp bypass configuration failed (invalid key or revoked SA)"
   fi
-elif [[ -f ~/.clasprc.json ]] && grep -q "isServiceAccount" ~/.clasprc.json; then
-  ok "Clasp bypass already active (~/.clasprc.json) — key file not needed"
 else
-  warn "Clasp key not found: $_CLASP_KEY"
+  warn "Clasp key not found: $_CLASP_KEY (mint one: gcloud iam service-accounts keys create <that path> --iam-account $_CLASP_SA)"
 fi
 
 # ── 7. GH EXTENSIONS ──────────────────────────────
@@ -572,7 +576,10 @@ info "Developer project scan..."
 # GONE 2026-07-16 — this section had gone back to warning/skipping every run).
 # Try the legacy path first, then the repo copy; report what actually happened.
 _SCANNER=""
-for _cand in ~/Developer/Developer.rb "$HOME/ai-marketingtool-llc/Ai marketingtool llc.rb"; do
+# 2026-10-24: the org repo is checked out one level down (~/ai-marketingtool-llc/ai-marketingtool-llc),
+# so look there too; the old paths had made this section skip on every run.
+for _cand in ~/Developer/Developer.rb "$HOME/ai-marketingtool-llc/Ai marketingtool llc.rb" \
+             "$HOME/ai-marketingtool-llc/ai-marketingtool-llc/Ai marketingtool llc.rb"; do
   [[ -f "$_cand" ]] && _SCANNER="$_cand" && break
 done
 if [[ -n "$_SCANNER" ]]; then
@@ -616,10 +623,12 @@ else
   warn "Firebase not logged in"; [[ -t 0 ]] && firebase login
 fi
 
-# Clasp
-if [[ -f ~/.clasprc.json ]] && grep -q "isServiceAccount" ~/.clasprc.json; then
-  _CLASP_EMAIL=$(grep -oE '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}' ~/.clasprc.json | head -1)
-  ok "Clasp → $_CLASP_EMAIL (Bypass Active)"
+# Clasp (2026-10-24: clasp 3 — service account through ADC, see section 6b)
+_CLASP_GAC=$(grep -E '^GOOGLE_APPLICATION_CREDENTIALS=' ~/.env 2>/dev/null | tail -1 | cut -d= -f2-)
+if [[ -n "$_CLASP_GAC" && -f "$_CLASP_GAC" ]] \
+   && GOOGLE_APPLICATION_CREDENTIALS="$_CLASP_GAC" clasp --adc show-authorized-user 2>/dev/null | grep -q "iam.gserviceaccount.com"; then
+  _CLASP_EMAIL=$(GOOGLE_APPLICATION_CREDENTIALS="$_CLASP_GAC" clasp --adc show-authorized-user 2>/dev/null | grep -oE '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}' | head -1)
+  ok "Clasp → $_CLASP_EMAIL (Bypass Active via --adc)"
 else
   warn "Clasp bypass not configured"
 fi
