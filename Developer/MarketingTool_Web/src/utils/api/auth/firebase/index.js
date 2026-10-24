@@ -9,33 +9,37 @@ import { firebaseAuth as auth } from '@/utils/auth-client/firebase';
 /***************************  FIREBASE - LOGIN  ***************************/
 
 export async function login(formData) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const { data, error } = await attempt(signInWithEmailAndPassword(auth, formData.email, formData.password));
+  let result;
+  try {
+    result = await attempt(signInWithEmailAndPassword(auth, formData.email, formData.password));
+  } catch {
+    throw new Error('Server error');
+  }
 
-      if (error || !data) {
-        reject(new Error('Invalid credentials'));
-        return;
-      }
+  const { data, error } = result;
 
-      const firebaseUser = data.user;
+  if (error || !data) {
+    throw new Error('Invalid credentials');
+  }
 
-      if (!firebaseUser) {
-        reject(new Error('Login failed'));
-        return;
-      }
+  const firebaseUser = data.user;
 
-      const token = await firebaseUser.getIdToken();
+  if (!firebaseUser) {
+    throw new Error('Login failed');
+  }
 
-      resolve({
-        id: firebaseUser.uid,
-        email: firebaseUser.email || '',
-        access_token: token
-      });
-    } catch {
-      reject(new Error('Server error'));
-    }
-  });
+  let token;
+  try {
+    token = await firebaseUser.getIdToken();
+  } catch {
+    throw new Error('Server error');
+  }
+
+  return {
+    id: firebaseUser.uid,
+    email: firebaseUser.email || '',
+    access_token: token
+  };
 }
 
 /***************************  FIREBASE - GET USER ***************************/
@@ -133,14 +137,12 @@ export function resetPassword(formData) {
 /***************************  FIREBASE - SIGN OUT  ***************************/
 
 export async function signOut() {
-  return new Promise(async (resolve, reject) => {
-    try {
-      await auth.signOut();
-      resolve({ status: 200 });
-    } catch {
-      reject(new Error('Server error'));
-    }
-  });
+  try {
+    await auth.signOut();
+    return { status: 200 };
+  } catch {
+    throw new Error('Server error');
+  }
 }
 
 const firebaseAuth = { login, signUp, forgotPassword, resetPassword, resend, verifyOtp, signOut, getUser };

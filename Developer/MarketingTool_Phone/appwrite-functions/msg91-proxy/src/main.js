@@ -69,10 +69,10 @@ module.exports = async ({ req, res, log, error }) => {
       }
 
       // Create Appwrite phone token (registers user)
-      var tr = await httpReq("api.marketingtool.pro", "/v1/account/tokens/phone", "POST",
+      tr = await httpReq("api.marketingtool.pro", "/v1/account/tokens/phone", "POST",
         { "Content-Type": "application/json", "X-Appwrite-Project": AW_PROJ },
         JSON.stringify({ userId: "unique()", phone: np }));
-      var uid = tr.ok ? tr.body.userId : null;
+      uid = tr.ok ? tr.body.userId : null;
       log("[B] aw token: " + (tr.ok ? uid : tr.status));
 
       // Send via Bird Verify (international support)
@@ -94,7 +94,7 @@ module.exports = async ({ req, res, log, error }) => {
         }
         log("[B] reviewer bypass: accepted");
         var vp = REVIEW_TEST_PHONE;
-        var uid = body.userId || null;
+        uid = body.userId || null;
         if (!uid) {
           var sr = await httpReq("api.marketingtool.pro", "/v1/users?search=" + encodeURIComponent(vp), "GET", awH);
           if (sr.ok && sr.body.users && sr.body.users.length > 0) uid = sr.body.users[0]["$id"];
@@ -106,24 +106,24 @@ module.exports = async ({ req, res, log, error }) => {
         return res.json({ success: true, type: "success", verified: true, userId: uid, secret: tokR.body.secret }, 200, H);
       }
 
-      var r = await httpReq("api.bird.com", "/workspaces/" + BIRD_WS + "/verify/" + vid, "POST", birdH,
+      r = await httpReq("api.bird.com", "/workspaces/" + BIRD_WS + "/verify/" + vid, "POST", birdH,
         JSON.stringify({ code: String(code) }));
       log("[B] verify: " + r.status + " " + (r.body.status || "?"));
       if (!r.ok || r.body.status !== "verified") return res.json({ success: false, message: "Invalid OTP" }, 400, H);
 
-      var vp = r.body.identifier ? r.body.identifier.phonenumber : phone;
-      var uid = body.userId || null;
+      vp = r.body.identifier ? r.body.identifier.phonenumber : phone;
+      uid = body.userId || null;
 
       // Find user if not provided
       if (!uid) {
-        var sr = await httpReq("api.marketingtool.pro", "/v1/users?search=" + encodeURIComponent(vp), "GET", awH);
+        sr = await httpReq("api.marketingtool.pro", "/v1/users?search=" + encodeURIComponent(vp), "GET", awH);
         if (sr.ok && sr.body.users && sr.body.users.length > 0) uid = sr.body.users[0]["$id"];
         log("[B] search: " + (uid || "none"));
       }
       if (!uid) return res.json({ success: true, verified: true, message: "No user" }, 200, H);
 
       // Create token via REST API (not SDK)
-      var tokR = await httpReq("api.marketingtool.pro", "/v1/users/" + uid + "/tokens", "POST", awH,
+      tokR = await httpReq("api.marketingtool.pro", "/v1/users/" + uid + "/tokens", "POST", awH,
         JSON.stringify({ length: 64, expire: 31536000 }));
       log("[B] token: " + tokR.status + " secret_len=" + (tokR.ok ? tokR.body.secret.length : 0));
 
@@ -141,7 +141,7 @@ module.exports = async ({ req, res, log, error }) => {
       if (vid === REVIEW_VERIFICATION_ID) {
         return res.json({ success: true, verificationId: vid }, 200, H);
       }
-      var r = await httpReq("api.bird.com", "/workspaces/" + BIRD_WS + "/verify/" + vid + "/resend", "POST", birdH);
+      r = await httpReq("api.bird.com", "/workspaces/" + BIRD_WS + "/verify/" + vid + "/resend", "POST", birdH);
       return res.json({ success: r.ok, verificationId: vid }, 200, H);
     }
 

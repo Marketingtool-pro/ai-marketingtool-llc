@@ -6,7 +6,6 @@ import { profiles } from './profile';
 import { Plans } from '@/sections/billing/type';
 
 const starterPlan = plans.filter((plan) => plan.name === Plans.STARTER)[0];
-const professionalPlan = plans.filter((plan) => plan.name === Plans.PROFESSIONAL)[0];
 const allToolsPlan = plans.filter((plan) => plan.name === Plans.ALL_TOOLS)[0];
 
 export const accounts = [

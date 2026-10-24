@@ -33,7 +33,7 @@ export const initialBlogFilter = {
 function getFormDataArray(formData, keyPrefix) {
   const result = [];
   let index = 0;
-  while (true) {
+  for (;;) {
     const value = formData.get(`${keyPrefix}[${index}]`);
     if (!value) break;
     result.push(value.toString());
@@ -254,14 +254,13 @@ export async function savePublish(formData) {
     ? (existingBlog?.banner ?? { name: '', size: 0, url: '' })
     : (targetPublished?.banner ?? existingBlog?.banner ?? { name: '', size: 0, url: '' });
 
+  // A string banner value means "keep the existing banner", so only a File replaces it.
   if (bannerFile instanceof File) {
     banner = {
       name: bannerFile.name,
       size: bannerFile.size,
       url: await getBase64(bannerFile)
     };
-  } else if (typeof bannerFile === 'string' && bannerFile) {
-    banner = banner; // keep existing
   }
 
   const blog = {

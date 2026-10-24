@@ -64,7 +64,7 @@ export const usernameSchema = {
 
 export const contactSchema = {
   required: 'Contact number is required',
-  pattern: { value: /^[0-9()\-\.]{7,15}$/, message: 'Invalid contact number' }
+  pattern: { value: /^[0-9()\-.]{7,15}$/, message: 'Invalid contact number' }
 };
 
 export const otpSchema = {

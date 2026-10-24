@@ -57,6 +57,7 @@ export default function useMenuCollapse(menu, pathname, miniMenuOpened, setSelec
       setParentOpenedMenu(menu.children, pathname, menu.id, setSelected, setOpen);
     }
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Only route and menu changes should re-run this effect (setters are stable).
+    // eslint-disable-next-line
   }, [pathname, menu.children]);
 }

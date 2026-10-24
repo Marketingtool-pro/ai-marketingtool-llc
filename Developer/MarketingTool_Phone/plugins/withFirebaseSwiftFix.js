@@ -22,19 +22,6 @@ try {
 
   // Only patch if not already patched
   if (!src.includes('SWIFT_PATCHED')) {
-    const original = `async function modifyAppDelegateAsync(appDelegateFileInfo) {
-    const { language, contents } = appDelegateFileInfo;
-    if (!['objc', 'objcpp'].includes(language)) {
-        throw new Error(\`Cannot add Firebase code to AppDelegate of language "\${language}"\`);
-    }`;
-
-    const patched = `async function modifyAppDelegateAsync(appDelegateFileInfo) {
-    const { language, contents } = appDelegateFileInfo; // SWIFT_PATCHED
-    if (!['objc', 'objcpp'].includes(language)) {
-        console.log('[Firebase] Skipping ObjC plugin for ' + language + ' AppDelegate');
-        return appDelegateFileInfo;
-    }`;
-
     if (src.includes('Cannot add Firebase code to AppDelegate of language')) {
       src = src.replace(
         /async function modifyAppDelegateAsync\(appDelegateFileInfo\)\s*\{[^}]*?throw new Error\(`Cannot add Firebase code[^`]*`\);[^}]*?\}/s,
