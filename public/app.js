@@ -1,6 +1,5 @@
 const msgs=document.getElementById('messages'),input=document.getElementById('prompt'),btn=document.getElementById('send');
 let loading=false;
-function esc(s){const d=document.createElement('div');d.textContent=s;return d.textContent;}
 function addMsg(role,text){
 const d=document.createElement('div');d.className='msg '+role;
 const bubble=document.createElement('div');bubble.className='bubble';bubble.textContent=text;
@@ -18,7 +17,7 @@ input.addEventListener('input',function(){this.style.height='auto';this.style.he
 const has=this.value.trim();btn.className=has?'active':'inactive';btn.disabled=!has||loading;});
 input.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
 btn.addEventListener('click',send);
-function agentToken(){let t='';try{t=localStorage.getItem('agentToken')||'';}catch(e){}if(!t){t=prompt('Agent API token')||'';try{localStorage.setItem('agentToken',t);}catch(e){}}return t;}
+function agentToken(){let t='';try{t=localStorage.getItem('agentToken')||'';}catch{/* storage blocked: fall through to prompt */}if(!t){t=prompt('Agent API token')||'';try{localStorage.setItem('agentToken',t);}catch{/* storage blocked: token kept for this call only */}}return t;}
 async function send(){const text=input.value.trim();if(!text||loading)return;
 loading=true;btn.disabled=true;btn.className='inactive';addMsg('user',text);input.value='';input.style.height='auto';
 showTyping();
