@@ -41,3 +41,11 @@ ignoreUntil = 2027-01-12
 reason = """ts-deepmerge 2.0.7 is a dev-only dependency of firebase-functions-test (latest 3.5.0 still requires ^2.0.1). \
 The fixed 8.x drops the default export that firebase-functions-test calls, so an override would break the test helper. \
 Runs only in local tests on fixed test fixtures."""
+
+[[IgnoredVulns]]
+id = "GHSA-mrhx-c7xc-m3w5"
+ignoreUntil = 2027-01-12
+reason = """zod 3.25.76 is the newest 3.x release; the advisory is fixed only in zod 4.6.6. In MarketingTool_Phone the \
+3.x copy is required by @expo/cli (^3.25.76) and @genkit-ai/core (^3.23.8), and in functions/ by @genkit-ai/core; \
+forcing zod 4 breaks their zod 3 API usage. Clears when @expo/cli and genkit publish zod-4 releases. \
+Every other lockfile in this repo is on zod 4.6.7."""

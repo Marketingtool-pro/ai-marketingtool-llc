@@ -138,7 +138,10 @@
     "@opentelemetry/core@2": "^2.10.0",
     "@opentelemetry/resources@2": "^2.10.0",
     "@opentelemetry/sdk-metrics@2": "^2.10.0",
-    "esbuild": "^0.28.1"
+    "esbuild": "^0.28.1",
+    "body-parser@1": "^1.20.9",
+    "body-parser@2": "^2.4.0",
+    "fast-uri": "^3.1.9"
   },
   "resolutions": {
     "qs": "^6.16.0",

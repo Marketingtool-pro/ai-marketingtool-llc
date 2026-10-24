@@ -46,6 +46,9 @@
     "form-data@2": "^2.5.6",
     "@opentelemetry/core@2": "^2.10.0",
     "@opentelemetry/resources@2": "^2.10.0",
-    "@opentelemetry/sdk-metrics@2": "^2.10.0"
+    "@opentelemetry/sdk-metrics@2": "^2.10.0",
+    "body-parser@1": "^1.20.9",
+    "body-parser@2": "^2.4.0",
+    "fast-uri": "^3.1.9"
   }
 }
