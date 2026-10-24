@@ -274,10 +274,14 @@ MAVENEOF
 
   # FUNCTIONAL packages check (replaces the header scope check — see top of
   # section). Runs AFTER the ~/.npmrc write so it tests the refreshed token.
-  if npm whoami --registry https://npm.pkg.github.com &>/dev/null; then
+  # 2026-10-25: run it from $HOME. Run inside a repo whose .npmrc says
+  # _authToken=${NODE_AUTH_TOKEN} (this one, Developer/MarketingTool_Agent, _LLC),
+  # npm uses that unset variable instead of ~/.npmrc and returns 403 even though
+  # the token is fine. That was the false "lacks packages scopes" warning.
+  if (cd "$HOME" && npm whoami --registry https://npm.pkg.github.com &>/dev/null); then
     ok "GitHub Packages tokens refreshed (npm + Ruby + Gradle + Maven + NuGet) — user: $_GH_USER"
   else
-    warn "GitHub Packages npm auth FAILING (403) — keyring token lacks packages scopes; ONE-TIME fix: gh auth refresh -s read:packages,write:packages -h github.com (note: fine-grained org tokens can NOT auth npm Packages — classic scopes required)"
+    warn "GitHub Packages npm auth FAILING (403) from \$HOME — check the token's scopes: gh auth status (needs read:packages or write:packages; fine-grained org tokens can NOT auth npm Packages)"
   fi
 else
   warn "gh token/user unavailable — GitHub Packages tokens not refreshed"
@@ -634,8 +638,9 @@ else
 fi
 
 # npm
-if npm whoami &>/dev/null 2>&1; then
-  ok "npm → $(npm whoami)"
+# 2026-10-25: checked from $HOME so a repo's own .npmrc cannot mask the real login.
+if (cd "$HOME" && npm whoami &>/dev/null); then
+  ok "npm → $(cd "$HOME" && npm whoami)"
 else
   warn "npm token expired — run: npm login"
 fi
@@ -654,7 +659,8 @@ fi
 # Guarded: `npm whoami` exits 1 whenever the registry token is missing/expired
 # — the common case this check exists FOR. Unguarded, `set -e` aborted here and
 # the "not authenticated" warn below was unreachable.
-_GH_PKG_USER=$(npm whoami --registry https://npm.pkg.github.com 2>/dev/null) || _GH_PKG_USER=""
+# Checked from $HOME for the same reason as section 4 (repo .npmrc masks ~/.npmrc).
+_GH_PKG_USER=$(cd "$HOME" && npm whoami --registry https://npm.pkg.github.com 2>/dev/null) || _GH_PKG_USER=""
 if [[ -n "$_GH_PKG_USER" ]]; then
   ok "GitHub Packages npm → @marketingtool-pro ($_GH_PKG_USER)"
 else
