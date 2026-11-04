@@ -541,12 +541,15 @@ if [[ -n "$_RT_JSON" ]]; then
   print -r -- "$_RT_JSON" | python3 -c '
 import json, sys, subprocess
 d = json.load(sys.stdin)
-ios = [(v.get("version",""), k) for k, v in d.items()
+ios = [(v.get("version",""), v.get("build",""), k) for k, v in d.items()
        if "iOS" in v.get("runtimeIdentifier","") and v.get("state") == "Ready"]
-ios.sort(key=lambda t: tuple(int(x) for x in t[0].split(".") if x.isdigit()))
-for ver, key in ios[:-1]:
+ios.sort(key=lambda t: (tuple(int(x) for x in t[0].split(".") if x.isdigit()), t[1]))
+# Name the build too: two builds of the same version (e.g. 27.2 beta + 27.2
+# release) made "Removed old iOS runtime 27.2" look like the current one went.
+keep = ios[-1] if ios else None
+for ver, build, key in ios[:-1]:
     subprocess.run(["xcrun", "simctl", "runtime", "delete", key], capture_output=True)
-    print(f"Removed old iOS runtime {ver}")
+    print(f"Removed older iOS runtime {ver} ({build}); kept {keep[0]} ({keep[1]})")
 ' 2>/dev/null | while read -r _l; do warn "$_l"; done
 fi
 
