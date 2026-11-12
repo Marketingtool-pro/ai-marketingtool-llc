@@ -2,7 +2,12 @@
 name: no-temp-scripts-for-owner
 enabled: true
 event: stop
-pattern: "(?i)(claude/jobs/[^/ ]+/tmp/|/tmp/)[^ ]*[.](sh|py)"
+# 2026-10-30: enabled. A plain `pattern:` on a stop rule is checked against an empty field and
+# never fires; matching the `transcript` field does. Hard blocking stays in stop-gates.py / mt-guard.
+conditions:
+  - field: transcript
+    operator: regex_match
+    pattern: '(?i)(claude/jobs/[^/ ]+/tmp/|/tmp/)[^ ]*[.](sh|py)'
 action: warn
 ---
 

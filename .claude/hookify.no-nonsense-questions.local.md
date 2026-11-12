@@ -2,7 +2,12 @@
 name: no-nonsense-questions
 enabled: true
 event: stop
-pattern: "(?i)(should i[ ?]|shall i[ ?]|do you want|want me to|would you like|which (one|option|approach)|let me know (if|whether|which)|can i proceed|ok to proceed|option [abc123][ .,:)?])"
+# 2026-10-30: enabled. A plain `pattern:` on a stop rule is checked against an empty field and
+# never fires; matching the `transcript` field does. Hard blocking stays in stop-gates.py / mt-guard.
+conditions:
+  - field: transcript
+    operator: regex_match
+    pattern: '(?i)(should i[ ?]|shall i[ ?]|do you want|want me to|would you like|which (one|option|approach)|let me know (if|whether|which)|can i proceed|ok to proceed|option [abc123][ .,:)?])'
 action: warn
 ---
 

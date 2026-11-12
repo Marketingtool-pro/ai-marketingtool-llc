@@ -2,7 +2,12 @@
 name: fix-problems-first
 enabled: true
 event: stop
-pattern: "(?i)(still (fails?|failing|broken|errors?)|not (yet )?fixed|pre-existing|already (broken|failing) (on|in) (master|main)|remaining (issues|errors|failures)|unrelated (failure|error)|known issue)"
+# 2026-10-30: enabled. A plain `pattern:` on a stop rule is checked against an empty field and
+# never fires; matching the `transcript` field does. Hard blocking stays in stop-gates.py / mt-guard.
+conditions:
+  - field: transcript
+    operator: regex_match
+    pattern: '(?i)(still (fails?|failing|broken|errors?)|not (yet )?fixed|pre-existing|already (broken|failing) (on|in) (master|main)|remaining (issues|errors|failures)|unrelated (failure|error)|known issue)'
 action: warn
 ---
 
