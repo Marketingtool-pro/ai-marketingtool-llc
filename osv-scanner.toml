@@ -4,13 +4,6 @@
 # Anything not listed here (including any new advisory) still fails the scan.
 
 [[IgnoredVulns]]
-id = "GHSA-vfj7-8cjw-p6xm"
-ignoreUntil = 2027-01-12
-reason = """braces 3.0.3 is the newest release; the advisory lists it as last_affected with no fixed version. \
-Reached only through file-glob tooling (micromatch via eslint/typescript-eslint, chokidar via @tanstack/router-plugin, \
-@react-native-community/cli) that expands patterns written in this repo, never user input."""
-
-[[IgnoredVulns]]
 id = "GHSA-86w9-cpqp-85rv"
 ignoreUntil = 2027-01-12
 reason = """node-forge 1.4.0 is the newest release; the advisory lists it as last_affected with no fixed version. \
